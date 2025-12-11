@@ -1,66 +1,104 @@
 # Android Integration Guide
 
-This directory contains examples and instructions for integrating the ULUI native library into an Android application.
+This directory contains examples and instructions for integrating the ULUI native code into an Android application.
 
-## Building the Native Library
+ULUI supports **two deployment modes** for Android:
+1. **Executable** - Standalone binary that can be run directly on Android
+2. **Shared Library** - NativeActivity-based APK for app store distribution
+
+**Note:** Only arm64-v8a (64-bit ARM) is supported. No armv7 (32-bit ARM) support.
+
+## Quick Build
 
 ### Prerequisites
 
 - Android NDK r21 or later
 - CMake 3.20 or later
-- Android SDK
+- Android SDK (for APK builds)
 
-### Build Steps
+### Using the Build Script
 
-1. Set the Android NDK path:
 ```bash
+# Set Android NDK path
 export ANDROID_NDK=/path/to/android-ndk
+
+# Build both executable and shared library (default)
+./build-android.sh
+
+# Build only executable
+./build-android.sh Release executable
+
+# Build only shared library
+./build-android.sh Release shared
+
+# Build both (explicit)
+./build-android.sh Release both
 ```
 
-2. Build for different architectures:
+## Build Mode 1: Android Executable
+
+The executable can be pushed to an Android device and run directly without packaging into an APK.
+
+### Manual Build
 
 ```bash
-# ARM 64-bit (most modern devices)
-mkdir -p build-android-arm64
-cd build-android-arm64
+mkdir -p build-android-exe-arm64
+cd build-android-exe-arm64
 cmake .. \
     -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
     -DCMAKE_ANDROID_NDK=$ANDROID_NDK \
     -DCMAKE_ANDROID_STL_TYPE=c++_shared \
     -DCMAKE_ANDROID_API=21 \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    -DANDROID_BUILD_SHARED=OFF
 cmake --build . -j$(nproc)
+```
 
-# ARM 32-bit (older devices)
-mkdir -p build-android-arm
-cd build-android-arm
+### Deployment
+
+```bash
+# Push executable to device
+adb push android-executable/arm64-v8a/ului_app /data/local/tmp/
+
+# Push shaders
+adb push android-executable/shaders /data/local/tmp/
+
+# Run on device (may require root on some devices)
+adb shell /data/local/tmp/ului_app
+```
+
+## Build Mode 2: Shared Library (NativeActivity APK)
+
+The shared library is packaged into an APK and distributed via app stores.
+
+### Manual Build
+
+```bash
+mkdir -p build-android-so-arm64
+cd build-android-so-arm64
 cmake .. \
     -DCMAKE_SYSTEM_NAME=Android \
-    -DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a \
+    -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
     -DCMAKE_ANDROID_NDK=$ANDROID_NDK \
     -DCMAKE_ANDROID_STL_TYPE=c++_shared \
     -DCMAKE_ANDROID_API=21 \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    -DANDROID_BUILD_SHARED=ON
 cmake --build . -j$(nproc)
 ```
 
-3. The built libraries will be in:
-   - `build-android-arm64/lib/libului_app.so`
-   - `build-android-arm/lib/libului_app.so`
-
-### Copy Libraries to Android Project
+### Copy to Android Project
 
 ```bash
-# Copy to your Android project's jniLibs directory
-cp build-android-arm64/lib/libului_app.so /path/to/your/android/app/src/main/jniLibs/arm64-v8a/
-cp build-android-arm/lib/libului_app.so /path/to/your/android/app/src/main/jniLibs/armeabi-v7a/
+# Copy shared library
+cp build-android-so-arm64/lib/libului_app.so android/app/src/main/jniLibs/arm64-v8a/
 
-# Also copy shaders
-cp -r shaders /path/to/your/android/app/src/main/assets/
+# Copy shaders
+cp -r shaders android/app/src/main/assets/
 ```
 
-## Integration in Android Studio
+## Integration in Android Studio (Shared Library Mode Only)
 
 ### 1. Project Structure
 
@@ -70,11 +108,9 @@ YourAndroidApp/
 │   ├── src/
 │   │   ├── main/
 │   │   │   ├── java/com/example/yourapp/
-│   │   │   │   └── MainActivity.java
+│   │   │   │   └── MainActivity.java (optional, not needed for NativeActivity)
 │   │   │   ├── jniLibs/
-│   │   │   │   ├── arm64-v8a/
-│   │   │   │   │   └── libului_app.so
-│   │   │   │   └── armeabi-v7a/
+│   │   │   │   └── arm64-v8a/
 │   │   │   │       └── libului_app.so
 │   │   │   ├── assets/
 │   │   │   │   └── shaders/
@@ -111,7 +147,7 @@ android {
     defaultConfig {
         minSdkVersion 21  // Android 5.0 (for OpenGL ES 3.0)
         ndk {
-            abiFilters 'arm64-v8a', 'armeabi-v7a'
+            abiFilters 'arm64-v8a'  // Only arm64-v8a, no armv7
         }
     }
 }

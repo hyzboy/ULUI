@@ -89,6 +89,8 @@ DerivedData/
 local.properties
 .cxx/
 build-android-*/
+android-executable/
+android-shared/
 android/.gradle/
 android/app/build/
 android/build/

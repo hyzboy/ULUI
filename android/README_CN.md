@@ -1,53 +1,101 @@
 # Android 集成指南
 
-本目录包含将 ULUI 原生库集成到 Android 应用程序的示例和说明。
+本目录包含将 ULUI 原生代码集成到 Android 应用程序的示例和说明。
 
-## 构建原生库
+ULUI 支持 Android 的**两种部署模式**：
+1. **可执行程序** - 可在 Android 上直接运行的独立二进制文件
+2. **共享库** - 基于 NativeActivity 的 APK，用于应用商店分发
+
+**注意：** 仅支持 arm64-v8a（64位ARM）。不支持 armv7（32位ARM）。
+
+## 快速构建
 
 ### 前置要求
 
 - Android NDK r21 或更高版本
 - CMake 3.20 或更高版本
-- Android SDK
+- Android SDK（用于构建 APK）
 
-### 构建步骤
+### 使用构建脚本
 
-1. 设置 Android NDK 路径：
 ```bash
+# 设置 Android NDK 路径
 export ANDROID_NDK=/path/to/android-ndk
+
+# 同时构建可执行程序和共享库（默认）
+./build-android.sh
+
+# 仅构建可执行程序
+./build-android.sh Release executable
+
+# 仅构建共享库
+./build-android.sh Release shared
+
+# 同时构建两者（明确指定）
+./build-android.sh Release both
 ```
 
-2. 为不同架构构建：
+## 构建模式 1：Android 可执行程序
+
+可执行程序可以推送到 Android 设备并直接运行，无需打包成 APK。
+
+### 手动构建
 
 ```bash
-# ARM 64位（大多数现代设备）
-mkdir -p build-android-arm64
-cd build-android-arm64
+mkdir -p build-android-exe-arm64
+cd build-android-exe-arm64
 cmake .. \
     -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
     -DCMAKE_ANDROID_NDK=$ANDROID_NDK \
     -DCMAKE_ANDROID_STL_TYPE=c++_shared \
     -DCMAKE_ANDROID_API=21 \
-    -DCMAKE_BUILD_TYPE=Release
-cmake --build . -j$(nproc)
-
-# ARM 32位（旧设备）
-mkdir -p build-android-arm
-cd build-android-arm
-cmake .. \
-    -DCMAKE_SYSTEM_NAME=Android \
-    -DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a \
-    -DCMAKE_ANDROID_NDK=$ANDROID_NDK \
-    -DCMAKE_ANDROID_STL_TYPE=c++_shared \
-    -DCMAKE_ANDROID_API=21 \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    -DANDROID_BUILD_SHARED=OFF
 cmake --build . -j$(nproc)
 ```
 
-3. 构建的库将位于：
-   - `build-android-arm64/lib/libului_app.so`
-   - `build-android-arm/lib/libului_app.so`
+### 部署
+
+```bash
+# 推送可执行程序到设备
+adb push android-executable/arm64-v8a/ului_app /data/local/tmp/
+
+# 推送着色器文件
+adb push android-executable/shaders /data/local/tmp/
+
+# 在设备上运行（某些设备可能需要 root 权限）
+adb shell /data/local/tmp/ului_app
+```
+
+## 构建模式 2：共享库（NativeActivity APK）
+
+共享库被打包成 APK 并通过应用商店分发。
+
+### 手动构建
+
+```bash
+mkdir -p build-android-so-arm64
+cd build-android-so-arm64
+cmake .. \
+    -DCMAKE_SYSTEM_NAME=Android \
+    -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
+    -DCMAKE_ANDROID_NDK=$ANDROID_NDK \
+    -DCMAKE_ANDROID_STL_TYPE=c++_shared \
+    -DCMAKE_ANDROID_API=21 \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DANDROID_BUILD_SHARED=ON
+cmake --build . -j$(nproc)
+```
+
+### 复制到 Android 项目
+
+```bash
+# 复制共享库
+cp build-android-so-arm64/lib/libului_app.so android/app/src/main/jniLibs/arm64-v8a/
+
+# 复制着色器文件
+cp -r shaders android/app/src/main/assets/
 
 ### 复制库到 Android 项目
 

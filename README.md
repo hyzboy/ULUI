@@ -95,7 +95,11 @@ open ULUI.xcodeproj
 
 ### Android
 
-The project builds as a shared library (.so) for Android, which can be loaded by an Android application.
+Android supports **two deployment modes**:
+1. **Executable** - Standalone binary for direct execution
+2. **Shared Library** - NativeActivity APK for app store distribution
+
+**Note:** Only arm64-v8a is supported (no armv7).
 
 #### Quick Build with Script
 
@@ -103,31 +107,47 @@ The project builds as a shared library (.so) for Android, which can be loaded by
 # Set Android NDK path
 export ANDROID_NDK=/path/to/android-ndk
 
-# Build for all architectures
+# Build both executable and shared library
 ./build-android.sh
 
-# Libraries will be in android/app/src/main/jniLibs/
+# Build only executable
+./build-android.sh Release executable
+
+# Build only shared library  
+./build-android.sh Release shared
 ```
 
-#### Manual Build
+#### Manual Build - Executable
 
 ```bash
-mkdir build-android-arm64
-cd build-android-arm64
-
 cmake .. \
     -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_NDK=/path/to/ndk \
     -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
     -DCMAKE_ANDROID_STL_TYPE=c++_shared \
-    -DCMAKE_ANDROID_API=21
+    -DCMAKE_ANDROID_API=21 \
+    -DANDROID_BUILD_SHARED=OFF
 
 cmake --build .
 ```
 
-#### Integration in Android Project
+#### Manual Build - Shared Library
 
-See the `android/` directory for a complete example Android project. The library is loaded via NativeActivity.
+```bash
+cmake .. \
+    -DCMAKE_SYSTEM_NAME=Android \
+    -DCMAKE_ANDROID_NDK=/path/to/ndk \
+    -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
+    -DCMAKE_ANDROID_STL_TYPE=c++_shared \
+    -DCMAKE_ANDROID_API=21 \
+    -DANDROID_BUILD_SHARED=ON
+
+cmake --build .
+```
+
+#### Integration
+
+See the `android/` directory for complete integration examples.
 
 For detailed instructions, see [android/README.md](android/README.md).
 

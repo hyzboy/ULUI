@@ -95,7 +95,11 @@ open ULUI.xcodeproj
 
 ### Android
 
-项目在 Android 平台上编译为共享库 (.so)，可以被 Android 应用加载使用。
+Android 支持**两种部署模式**：
+1. **可执行程序** - 可直接运行的独立二进制文件
+2. **共享库** - 用于应用商店分发的 NativeActivity APK
+
+**注意：** 仅支持 arm64-v8a（不支持 armv7）。
 
 #### 使用脚本快速构建
 
@@ -103,31 +107,47 @@ open ULUI.xcodeproj
 # 设置 Android NDK 路径
 export ANDROID_NDK=/path/to/android-ndk
 
-# 为所有架构构建
+# 同时构建可执行程序和共享库
 ./build-android.sh
 
-# 库文件将输出到 android/app/src/main/jniLibs/
+# 仅构建可执行程序
+./build-android.sh Release executable
+
+# 仅构建共享库
+./build-android.sh Release shared
 ```
 
-#### 手动构建
+#### 手动构建 - 可执行程序
 
 ```bash
-mkdir build-android-arm64
-cd build-android-arm64
-
 cmake .. \
     -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_NDK=/path/to/ndk \
     -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
     -DCMAKE_ANDROID_STL_TYPE=c++_shared \
-    -DCMAKE_ANDROID_API=21
+    -DCMAKE_ANDROID_API=21 \
+    -DANDROID_BUILD_SHARED=OFF
 
 cmake --build .
 ```
 
-#### 集成到 Android 项目
+#### 手动构建 - 共享库
 
-查看 `android/` 目录获取完整的 Android 项目示例。库通过 NativeActivity 加载。
+```bash
+cmake .. \
+    -DCMAKE_SYSTEM_NAME=Android \
+    -DCMAKE_ANDROID_NDK=/path/to/ndk \
+    -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
+    -DCMAKE_ANDROID_STL_TYPE=c++_shared \
+    -DCMAKE_ANDROID_API=21 \
+    -DANDROID_BUILD_SHARED=ON
+
+cmake --build .
+```
+
+#### 集成
+
+查看 `android/` 目录获取完整的集成示例。
 
 详细说明请参阅 [android/README.md](android/README.md)。
 
