@@ -30,7 +30,6 @@ private:
     GLuint m_vertexShader;
     GLuint m_fragmentShader;
     GLuint m_vbo;
-    GLuint m_vao;
     
     GLint m_positionAttrib;
     GLint m_colorAttrib;

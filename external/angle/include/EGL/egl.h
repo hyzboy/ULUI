@@ -65,15 +65,18 @@ typedef unsigned int EGLenum;
 
 #define EGL_HEIGHT 0x3056
 #define EGL_WIDTH 0x3057
+#define EGL_NATIVE_VISUAL_ID 0x302E
 
 // EGL Functions
 EGLDisplay eglGetDisplay(EGLNativeDisplayType display_id);
 EGLBoolean eglInitialize(EGLDisplay dpy, EGLint *major, EGLint *minor);
 EGLBoolean eglChooseConfig(EGLDisplay dpy, const EGLint *attrib_list, EGLConfig *configs, EGLint config_size, EGLint *num_config);
+EGLBoolean eglGetConfigAttrib(EGLDisplay dpy, EGLConfig config, EGLint attribute, EGLint *value);
 EGLSurface eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config, EGLNativeWindowType win, const EGLint *attrib_list);
 EGLContext eglCreateContext(EGLDisplay dpy, EGLConfig config, EGLContext share_context, const EGLint *attrib_list);
 EGLBoolean eglMakeCurrent(EGLDisplay dpy, EGLSurface draw, EGLSurface read, EGLContext ctx);
 EGLBoolean eglSwapBuffers(EGLDisplay dpy, EGLSurface surface);
+EGLBoolean eglQuerySurface(EGLDisplay dpy, EGLSurface surface, EGLint attribute, EGLint *value);
 EGLBoolean eglTerminate(EGLDisplay dpy);
 EGLBoolean eglDestroySurface(EGLDisplay dpy, EGLSurface surface);
 EGLBoolean eglDestroyContext(EGLDisplay dpy, EGLContext ctx);

@@ -11,7 +11,6 @@ TriangleApp::TriangleApp()
     , m_vertexShader(0)
     , m_fragmentShader(0)
     , m_vbo(0)
-    , m_vao(0)
     , m_positionAttrib(-1)
     , m_colorAttrib(-1)
 {
