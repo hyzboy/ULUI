@@ -88,3 +88,9 @@ DerivedData/
 .gradle/
 local.properties
 .cxx/
+build-android-*/
+android/.gradle/
+android/app/build/
+android/build/
+android/app/src/main/jniLibs/
+android/app/src/main/assets/shaders/

@@ -6,15 +6,31 @@ set(SOURCES
     triangle_app.cpp
 )
 
-# Create executable
-add_executable(ului_app ${SOURCES})
+# Create executable or shared library based on platform
+if(PLATFORM_ANDROID)
+    # For Android, create a shared library
+    add_library(ului_app SHARED ${SOURCES})
+else()
+    # For other platforms, create an executable
+    add_executable(ului_app ${SOURCES})
+endif()
 
 # Link libraries
 if(PLATFORM_IOS OR PLATFORM_ANDROID)
     # For mobile platforms, link native libraries
     if(PLATFORM_ANDROID)
+        # Add native_app_glue for Android
+        add_library(native_app_glue STATIC
+            ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c
+        )
+        target_include_directories(native_app_glue PUBLIC
+            ${ANDROID_NDK}/sources/android/native_app_glue
+        )
+        target_link_libraries(native_app_glue PUBLIC log)
+        
         target_link_libraries(ului_app PRIVATE 
             angle_egl
+            native_app_glue
             android
             log
             EGL

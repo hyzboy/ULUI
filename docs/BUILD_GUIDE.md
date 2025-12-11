@@ -190,20 +190,39 @@ cmake .. \
 
 ### Android
 
+The project compiles as a **shared library (.so)** for Android, which can be loaded by an Android application using NativeActivity.
+
+#### Quick Build with Script
+
+```bash
+# Set Android NDK path
+export ANDROID_NDK=/path/to/android-ndk
+
+# Build for all architectures (arm64-v8a, armeabi-v7a)
+./build-android.sh
+
+# Output libraries will be in:
+# - android/app/src/main/jniLibs/arm64-v8a/libului_app.so
+# - android/app/src/main/jniLibs/armeabi-v7a/libului_app.so
+```
+
 #### Using CMake Directly
 
 ```bash
-mkdir build-android
-cd build-android
+mkdir build-android-arm64
+cd build-android-arm64
 
 cmake .. \
     -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
     -DCMAKE_ANDROID_NDK=/path/to/ndk \
     -DCMAKE_ANDROID_STL_TYPE=c++_shared \
-    -DCMAKE_ANDROID_API=21
+    -DCMAKE_ANDROID_API=21 \
+    -DCMAKE_BUILD_TYPE=Release
 
-cmake --build .
+cmake --build . -j$(nproc)
+
+# Output: build-android-arm64/lib/libului_app.so
 ```
 
 #### Android ABIs
@@ -211,7 +230,7 @@ cmake --build .
 Build for different architectures:
 
 ```bash
-# ARM 64-bit (most modern devices)
+# ARM 64-bit (most modern devices) - Recommended
 -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a
 
 # ARM 32-bit (older devices)
@@ -223,6 +242,24 @@ Build for different architectures:
 # x86 32-bit (older emulator)
 -DCMAKE_ANDROID_ARCH_ABI=x86
 ```
+
+#### Integration in Android Project
+
+After building, the .so library can be loaded in an Android project:
+
+1. **Using the provided Android project template:**
+   ```bash
+   cd android
+   ./gradlew assembleDebug
+   ./gradlew installDebug
+   ```
+
+2. **Integrating into your own project:**
+   - Copy `libului_app.so` to `your-app/src/main/jniLibs/{abi}/`
+   - Copy `shaders/` to `your-app/src/main/assets/`
+   - Configure AndroidManifest.xml for NativeActivity
+
+For detailed integration instructions, see [android/README.md](../android/README.md).
 
 ## Cross-Compilation
 

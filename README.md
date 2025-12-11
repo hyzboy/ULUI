@@ -95,18 +95,41 @@ open ULUI.xcodeproj
 
 ### Android
 
+The project builds as a shared library (.so) for Android, which can be loaded by an Android application.
+
+#### Quick Build with Script
+
 ```bash
-mkdir build-android
-cd build-android
+# Set Android NDK path
+export ANDROID_NDK=/path/to/android-ndk
+
+# Build for all architectures
+./build-android.sh
+
+# Libraries will be in android/app/src/main/jniLibs/
+```
+
+#### Manual Build
+
+```bash
+mkdir build-android-arm64
+cd build-android-arm64
 
 cmake .. \
     -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_NDK=/path/to/ndk \
     -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
-    -DCMAKE_ANDROID_STL_TYPE=c++_shared
+    -DCMAKE_ANDROID_STL_TYPE=c++_shared \
+    -DCMAKE_ANDROID_API=21
 
 cmake --build .
 ```
+
+#### Integration in Android Project
+
+See the `android/` directory for a complete example Android project. The library is loaded via NativeActivity.
+
+For detailed instructions, see [android/README.md](android/README.md).
 
 ## Project Structure
 
@@ -114,8 +137,11 @@ cmake --build .
 ULUI/
 ├── CMakeLists.txt          # Root CMake configuration
 ├── README.md               # This file
+├── README_CN.md            # Chinese documentation
 ├── LICENSE                 # License file
 ├── .gitignore             # Git ignore rules
+├── build.sh               # Linux/macOS build script
+├── build-android.sh       # Android build script
 ├── external/              # External dependencies
 │   ├── CMakeLists.txt     # External dependencies CMake
 │   └── angle/             # ANGLE headers
@@ -128,9 +154,22 @@ ULUI/
 │   ├── CMakeLists.txt     # Source CMake configuration
 │   ├── main.cpp           # Main entry point (platform-specific)
 │   └── triangle_app.cpp   # Triangle rendering implementation
-└── shaders/               # GLSL shaders
-    ├── triangle.vert      # Vertex shader
-    └── triangle.frag      # Fragment shader
+├── shaders/               # GLSL shaders
+│   ├── triangle.vert      # Vertex shader
+│   └── triangle.frag      # Fragment shader
+├── android/               # Android integration
+│   ├── README.md          # Android build & integration guide
+│   ├── build.gradle       # Gradle build file
+│   ├── settings.gradle    # Gradle settings
+│   └── app/               # Example Android app
+│       ├── build.gradle   # App build configuration
+│       └── src/main/
+│           ├── AndroidManifest.xml
+│           └── res/       # Android resources
+└── docs/                  # Documentation
+    ├── BUILD_GUIDE.md     # Detailed build guide
+    ├── ANGLE_INTEGRATION.md
+    └── PROJECT_SUMMARY.md
 ```
 
 ## ANGLE Integration

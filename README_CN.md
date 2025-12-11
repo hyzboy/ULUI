@@ -95,18 +95,41 @@ open ULUI.xcodeproj
 
 ### Android
 
+项目在 Android 平台上编译为共享库 (.so)，可以被 Android 应用加载使用。
+
+#### 使用脚本快速构建
+
 ```bash
-mkdir build-android
-cd build-android
+# 设置 Android NDK 路径
+export ANDROID_NDK=/path/to/android-ndk
+
+# 为所有架构构建
+./build-android.sh
+
+# 库文件将输出到 android/app/src/main/jniLibs/
+```
+
+#### 手动构建
+
+```bash
+mkdir build-android-arm64
+cd build-android-arm64
 
 cmake .. \
     -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_NDK=/path/to/ndk \
     -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
-    -DCMAKE_ANDROID_STL_TYPE=c++_shared
+    -DCMAKE_ANDROID_STL_TYPE=c++_shared \
+    -DCMAKE_ANDROID_API=21
 
 cmake --build .
 ```
+
+#### 集成到 Android 项目
+
+查看 `android/` 目录获取完整的 Android 项目示例。库通过 NativeActivity 加载。
+
+详细说明请参阅 [android/README.md](android/README.md)。
 
 ## 项目结构
 
