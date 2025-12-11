@@ -95,59 +95,43 @@ open ULUI.xcodeproj
 
 ### Android
 
-Android supports **two deployment modes**:
-1. **Executable** - Standalone binary for direct execution
-2. **Shared Library** - NativeActivity APK for app store distribution
+The project compiles as a **shared library (.so)** for Android with **6 integration examples** showing different usage patterns.
 
 **Note:** Only arm64-v8a is supported (no armv7).
 
-#### Quick Build with Script
+#### Build Shared Library
 
 ```bash
 # Set Android NDK path
 export ANDROID_NDK=/path/to/android-ndk
 
-# Build both executable and shared library
+# Build libului_app.so
 ./build-android.sh
 
-# Build only executable
-./build-android.sh Release executable
-
-# Build only shared library  
-./build-android.sh Release shared
+# Library automatically copied to all 6 example projects
 ```
 
-#### Manual Build - Executable
+#### 6 Integration Examples
+
+The `android/` directory contains 6 complete example projects:
+
+1. **NativeActivity + SO-GL** - Pure native, .so manages OpenGL
+2. **NativeActivity + App-GL** - Pure native, app manages OpenGL
+3. **GameActivity + SO-GL** - Modern native game, .so manages OpenGL
+4. **GameActivity + App-GL** - Modern native game, app manages OpenGL
+5. **Java/GLSurfaceView + SO-GL** - Java app, .so manages OpenGL
+6. **Java/GLSurfaceView + App-GL** - Java app, app manages OpenGL
+
+**All examples use the same .so library** - only integration differs.
+
+#### Run an Example
 
 ```bash
-cmake .. \
-    -DCMAKE_SYSTEM_NAME=Android \
-    -DCMAKE_ANDROID_NDK=/path/to/ndk \
-    -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
-    -DCMAKE_ANDROID_STL_TYPE=c++_shared \
-    -DCMAKE_ANDROID_API=21 \
-    -DANDROID_BUILD_SHARED=OFF
-
-cmake --build .
+cd android/example-nativeactivity-so-gl
+./gradlew installDebug
 ```
 
-#### Manual Build - Shared Library
-
-```bash
-cmake .. \
-    -DCMAKE_SYSTEM_NAME=Android \
-    -DCMAKE_ANDROID_NDK=/path/to/ndk \
-    -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
-    -DCMAKE_ANDROID_STL_TYPE=c++_shared \
-    -DCMAKE_ANDROID_API=21 \
-    -DANDROID_BUILD_SHARED=ON
-
-cmake --build .
-```
-
-#### Integration
-
-See the `android/` directory for complete integration examples.
+See [android/README.md](android/README.md) for detailed documentation.
 
 For detailed instructions, see [android/README.md](android/README.md).
 

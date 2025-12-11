@@ -95,59 +95,43 @@ open ULUI.xcodeproj
 
 ### Android
 
-Android 支持**两种部署模式**：
-1. **可执行程序** - 可直接运行的独立二进制文件
-2. **共享库** - 用于应用商店分发的 NativeActivity APK
+项目编译为 Android **共享库 (.so)**，提供 **6个集成示例**展示不同的使用模式。
 
 **注意：** 仅支持 arm64-v8a（不支持 armv7）。
 
-#### 使用脚本快速构建
+#### 构建共享库
 
 ```bash
 # 设置 Android NDK 路径
 export ANDROID_NDK=/path/to/android-ndk
 
-# 同时构建可执行程序和共享库
+# 构建 libului_app.so
 ./build-android.sh
 
-# 仅构建可执行程序
-./build-android.sh Release executable
-
-# 仅构建共享库
-./build-android.sh Release shared
+# 库会自动复制到所有 6 个示例项目
 ```
 
-#### 手动构建 - 可执行程序
+#### 6个集成示例
+
+`android/` 目录包含 6 个完整的示例项目：
+
+1. **NativeActivity + SO-GL** - 纯原生，.so 管理 OpenGL
+2. **NativeActivity + App-GL** - 纯原生，应用管理 OpenGL
+3. **GameActivity + SO-GL** - 现代原生游戏，.so 管理 OpenGL
+4. **GameActivity + App-GL** - 现代原生游戏，应用管理 OpenGL
+5. **Java/GLSurfaceView + SO-GL** - Java 应用，.so 管理 OpenGL
+6. **Java/GLSurfaceView + App-GL** - Java 应用，应用管理 OpenGL
+
+**所有示例使用相同的 .so 库** - 仅集成方式不同。
+
+#### 运行示例
 
 ```bash
-cmake .. \
-    -DCMAKE_SYSTEM_NAME=Android \
-    -DCMAKE_ANDROID_NDK=/path/to/ndk \
-    -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
-    -DCMAKE_ANDROID_STL_TYPE=c++_shared \
-    -DCMAKE_ANDROID_API=21 \
-    -DANDROID_BUILD_SHARED=OFF
-
-cmake --build .
+cd android/example-nativeactivity-so-gl
+./gradlew installDebug
 ```
 
-#### 手动构建 - 共享库
-
-```bash
-cmake .. \
-    -DCMAKE_SYSTEM_NAME=Android \
-    -DCMAKE_ANDROID_NDK=/path/to/ndk \
-    -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
-    -DCMAKE_ANDROID_STL_TYPE=c++_shared \
-    -DCMAKE_ANDROID_API=21 \
-    -DANDROID_BUILD_SHARED=ON
-
-cmake --build .
-```
-
-#### 集成
-
-查看 `android/` 目录获取完整的集成示例。
+详细文档请参阅 [android/README.md](android/README.md)。
 
 详细说明请参阅 [android/README.md](android/README.md)。
 

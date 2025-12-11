@@ -1,240 +1,184 @@
-# Android Integration Guide
+# Android Integration Examples
 
-This directory contains examples and instructions for integrating the ULUI native code into an Android application.
+This directory contains 6 different example projects demonstrating various ways to integrate the ULUI shared library (libului_app.so) into Android applications.
 
-ULUI supports **two deployment modes** for Android:
-1. **Executable** - Standalone binary that can be run directly on Android
-2. **Shared Library** - NativeActivity-based APK for app store distribution
+**All examples use the same shared library** - only the integration approach differs.
 
-**Note:** Only arm64-v8a (64-bit ARM) is supported. No armv7 (32-bit ARM) support.
+## Supported Architecture
 
-## Quick Build
+- **arm64-v8a only** (64-bit ARM)
+- No armv7 support
 
-### Prerequisites
+## Example Projects
 
-- Android NDK r21 or later
-- CMake 3.20 or later
-- Android SDK (for APK builds)
+### 1. NativeActivity - OpenGL Initialized by .so
+**Directory**: `example-nativeactivity-so-gl/`
 
-### Using the Build Script
+- Uses Android NativeActivity
+- OpenGL ES context created and managed by the native .so library
+- No Java/Kotlin code needed
+- Best for pure native apps
+
+### 2. NativeActivity - OpenGL Initialized by App  
+**Directory**: `example-nativeactivity-app-gl/`
+
+- Uses Android NativeActivity
+- OpenGL ES context created by the Android app framework
+- .so library uses existing context
+- Useful when you need app-level GL management
+
+### 3. GameActivity - OpenGL Initialized by .so
+**Directory**: `example-gameactivity-so-gl/`
+
+- Uses Android GameActivity (modern replacement for NativeActivity)
+- OpenGL ES context created and managed by the native .so library
+- Better input handling than NativeActivity
+- Recommended for new game projects
+
+### 4. GameActivity - OpenGL Initialized by App
+**Directory**: `example-gameactivity-app-gl/`
+
+- Uses Android GameActivity
+- OpenGL ES context created by the Android app framework
+- .so library uses existing context
+- Best control over app lifecycle
+
+### 5. Java/Kotlin App - OpenGL Initialized by .so
+**Directory**: `example-java-so-gl/`
+
+- Uses GLSurfaceView with Java/Kotlin activity
+- OpenGL ES context created by the native .so library
+- Java layer provides UI and app logic
+- Native layer handles all rendering
+
+### 6. Java/Kotlin App - OpenGL Initialized by App
+**Directory**: `example-java-app-gl/`
+
+- Uses GLSurfaceView with Java/Kotlin activity
+- OpenGL ES context created by GLSurfaceView
+- Native library called for rendering only
+- Most common integration pattern for mixed apps
+
+## Quick Start
+
+### 1. Build the Shared Library
 
 ```bash
 # Set Android NDK path
 export ANDROID_NDK=/path/to/android-ndk
 
-# Build both executable and shared library (default)
+# Build libului_app.so
 ./build-android.sh
 
-# Build only executable
-./build-android.sh Release executable
-
-# Build only shared library
-./build-android.sh Release shared
-
-# Build both (explicit)
-./build-android.sh Release both
+# The script automatically copies the .so to all 6 example projects
 ```
 
-## Build Mode 1: Android Executable
-
-The executable can be pushed to an Android device and run directly without packaging into an APK.
-
-### Manual Build
+### 2. Build and Run an Example
 
 ```bash
-mkdir -p build-android-exe-arm64
-cd build-android-exe-arm64
-cmake .. \
-    -DCMAKE_SYSTEM_NAME=Android \
-    -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
-    -DCMAKE_ANDROID_NDK=$ANDROID_NDK \
-    -DCMAKE_ANDROID_STL_TYPE=c++_shared \
-    -DCMAKE_ANDROID_API=21 \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DANDROID_BUILD_SHARED=OFF
-cmake --build . -j$(nproc)
+# Choose an example project
+cd android/example-nativeactivity-so-gl
+
+# Build and install
+./gradlew installDebug
+
+# Or build APK only
+./gradlew assembleDebug
 ```
 
-### Deployment
+## Project Structure
 
-```bash
-# Push executable to device
-adb push android-executable/arm64-v8a/ului_app /data/local/tmp/
-
-# Push shaders
-adb push android-executable/shaders /data/local/tmp/
-
-# Run on device (may require root on some devices)
-adb shell /data/local/tmp/ului_app
-```
-
-## Build Mode 2: Shared Library (NativeActivity APK)
-
-The shared library is packaged into an APK and distributed via app stores.
-
-### Manual Build
-
-```bash
-mkdir -p build-android-so-arm64
-cd build-android-so-arm64
-cmake .. \
-    -DCMAKE_SYSTEM_NAME=Android \
-    -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
-    -DCMAKE_ANDROID_NDK=$ANDROID_NDK \
-    -DCMAKE_ANDROID_STL_TYPE=c++_shared \
-    -DCMAKE_ANDROID_API=21 \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DANDROID_BUILD_SHARED=ON
-cmake --build . -j$(nproc)
-```
-
-### Copy to Android Project
-
-```bash
-# Copy shared library
-cp build-android-so-arm64/lib/libului_app.so android/app/src/main/jniLibs/arm64-v8a/
-
-# Copy shaders
-cp -r shaders android/app/src/main/assets/
-```
-
-## Integration in Android Studio (Shared Library Mode Only)
-
-### 1. Project Structure
+Each example project has the following structure:
 
 ```
-YourAndroidApp/
+example-xxx/
 ├── app/
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/example/yourapp/
-│   │   │   │   └── MainActivity.java (optional, not needed for NativeActivity)
-│   │   │   ├── jniLibs/
-│   │   │   │   └── arm64-v8a/
-│   │   │   │       └── libului_app.so
-│   │   │   ├── assets/
-│   │   │   │   └── shaders/
-│   │   │   │       ├── triangle.vert
-│   │   │   │       └── triangle.frag
-│   │   │   └── AndroidManifest.xml
-│   │   └── build.gradle
-│   └── build.gradle
+│   ├── build.gradle
+│   └── src/
+│       └── main/
+│           ├── AndroidManifest.xml
+│           ├── java/          (Java/Kotlin examples only)
+│           ├── jniLibs/
+│           │   └── arm64-v8a/
+│           │       └── libului_app.so
+│           └── assets/
+│               └── shaders/
+├── build.gradle
 └── settings.gradle
 ```
 
-### 2. AndroidManifest.xml
+## Comparison Matrix
 
-See `app/src/main/AndroidManifest.xml` in this directory for a complete example.
+| Example | Activity Type | GL Init | Java Code | Use Case |
+|---------|--------------|---------|-----------|----------|
+| 1 | NativeActivity | .so | None | Pure native app |
+| 2 | NativeActivity | App | Minimal | Native with GL control |
+| 3 | GameActivity | .so | None | Modern native game |
+| 4 | GameActivity | App | Minimal | Modern with GL control |
+| 5 | GLSurfaceView | .so | Medium | Hybrid app, native rendering |
+| 6 | GLSurfaceView | App | Medium | Standard Android GL app |
 
-Key requirements:
-- Declare native activity
-- Request OpenGL ES 3.0
-- Set screen orientation (optional)
+## Technical Details
 
-### 3. Loading the Library
+### Shared Library Interface
 
-The library uses `android_native_app_glue` and exports an `android_main` function. Android automatically loads and runs it when configured as a NativeActivity.
+The `libului_app.so` library exports:
 
-No Java/Kotlin code is needed - the entire application runs in native C++ code.
+- `android_main(android_app*)` - For NativeActivity/GameActivity with .so GL init
+- `ANativeActivity_onCreate()` - Standard native activity entry point
+- JNI functions for Java integration (examples 5 & 6)
 
-### 4. Gradle Configuration
+### OpenGL ES Version
 
-See `app/build.gradle` for the complete configuration.
+All examples use **OpenGL ES 3.0** via ANGLE or system OpenGL ES.
 
-Important settings:
-```gradle
-android {
-    defaultConfig {
-        minSdkVersion 21  // Android 5.0 (for OpenGL ES 3.0)
-        ndk {
-            abiFilters 'arm64-v8a'  // Only arm64-v8a, no armv7
-        }
-    }
-}
-```
+### Minimum Requirements
 
-## Alternative: Using CMake in Android Studio
+- Android API Level 21 (Android 5.0)
+- OpenGL ES 3.0 support
+- 64-bit ARM device (arm64-v8a)
 
-Instead of pre-building the library, you can configure Android Studio to build it directly:
+## Choosing the Right Example
 
-### 1. Add to app/build.gradle:
+**For a new game project:**
+- Start with `example-gameactivity-so-gl` (Example 3)
 
-```gradle
-android {
-    defaultConfig {
-        externalNativeBuild {
-            cmake {
-                cppFlags "-std=c++20"
-                arguments "-DCMAKE_BUILD_TYPE=Release"
-            }
-        }
-    }
-    
-    externalNativeBuild {
-        cmake {
-            path "../../CMakeLists.txt"  // Path to ULUI CMakeLists.txt
-            version "3.20.0"
-        }
-    }
-}
-```
+**For maximum control:**
+- Use `example-java-app-gl` (Example 6) with GLSurfaceView
 
-### 2. Android Studio will:
-- Automatically build the native library
-- Package it with your APK
-- Handle multi-architecture builds
+**For pure native C++ app:**
+- Use `example-nativeactivity-so-gl` (Example 1)
 
-## Running the Application
+**For existing Android app integration:**
+- Use `example-java-so-gl` (Example 5) or `example-java-app-gl` (Example 6)
 
-1. Connect an Android device or start an emulator
-2. Install the APK:
-```bash
-./gradlew installDebug
-```
-
-3. Or run directly from Android Studio (Run → Run 'app')
-
-## Debugging
-
-### Viewing Logs
+## Building for Release
 
 ```bash
-adb logcat | grep ULUI
+# Build release APK
+cd android/example-xxx
+./gradlew assembleRelease
+
+# APK will be in app/build/outputs/apk/release/
 ```
 
-### Debugging Native Code
+## Troubleshooting
 
-1. In Android Studio: Run → Debug 'app'
-2. Set breakpoints in C++ code
-3. Use LLDB debugger
+### Library not found
+- Ensure `./build-android.sh` completed successfully
+- Check `app/src/main/jniLibs/arm64-v8a/libului_app.so` exists
 
-### Common Issues
-
-**Library not found:**
-- Verify .so files are in correct jniLibs directories
-- Check ABI matches device architecture
-- Ensure minSdkVersion is 21 or higher
-
-**Shader loading fails:**
-- Verify shaders are in assets/shaders/
-- Check asset loading code in triangle_app.cpp
-
-**EGL initialization fails:**
+### OpenGL errors
 - Verify device supports OpenGL ES 3.0
-- Check AndroidManifest.xml has correct OpenGL ES declaration
+- Check logcat for detailed error messages: `adb logcat | grep ULUI`
 
-## Performance Tips
-
-1. **Build in Release mode** for better performance
-2. **Use arm64-v8a** for 64-bit devices (faster)
-3. **Enable hardware acceleration** in AndroidManifest.xml (already included in example)
-
-## Example Projects
-
-See the `app/` directory for a complete example Android project that loads and uses the ULUI native library.
+### Shader loading fails
+- Verify shaders are in `app/src/main/assets/shaders/`
+- Check asset paths in code
 
 ## Additional Resources
 
 - [Android NDK Documentation](https://developer.android.com/ndk)
 - [NativeActivity Guide](https://developer.android.com/ndk/guides/concepts#naa)
+- [GameActivity Documentation](https://developer.android.com/games/agdk/game-activity)
 - [OpenGL ES on Android](https://developer.android.com/guide/topics/graphics/opengl)

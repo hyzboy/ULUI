@@ -6,15 +6,12 @@ set(SOURCES
     triangle_app.cpp
 )
 
-# Option to build as shared library on Android
-option(ANDROID_BUILD_SHARED "Build as shared library on Android (for NativeActivity)" OFF)
-
 # Create executable or shared library based on platform
-if(PLATFORM_ANDROID AND ANDROID_BUILD_SHARED)
-    # For Android shared library (NativeActivity)
+if(PLATFORM_ANDROID)
+    # For Android, always create a shared library
     add_library(ului_app SHARED ${SOURCES})
 else()
-    # For other platforms and Android executable, create an executable
+    # For other platforms, create an executable
     add_executable(ului_app ${SOURCES})
 endif()
 
@@ -22,34 +19,23 @@ endif()
 if(PLATFORM_IOS OR PLATFORM_ANDROID)
     # For mobile platforms, link native libraries
     if(PLATFORM_ANDROID)
-        if(ANDROID_BUILD_SHARED)
-            # Add native_app_glue for Android shared library (NativeActivity)
-            add_library(native_app_glue STATIC
-                ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c
-            )
-            target_include_directories(native_app_glue PUBLIC
-                ${ANDROID_NDK}/sources/android/native_app_glue
-            )
-            target_link_libraries(native_app_glue PUBLIC log)
-            
-            target_link_libraries(ului_app PRIVATE 
-                angle_egl
-                native_app_glue
-                android
-                log
-                EGL
-                GLESv3
-            )
-        else()
-            # Android executable (no native_app_glue needed)
-            target_link_libraries(ului_app PRIVATE 
-                angle_egl
-                android
-                log
-                EGL
-                GLESv3
-            )
-        endif()
+        # Add native_app_glue for Android shared library
+        add_library(native_app_glue STATIC
+            ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c
+        )
+        target_include_directories(native_app_glue PUBLIC
+            ${ANDROID_NDK}/sources/android/native_app_glue
+        )
+        target_link_libraries(native_app_glue PUBLIC log)
+        
+        target_link_libraries(ului_app PRIVATE 
+            angle_egl
+            native_app_glue
+            android
+            log
+            EGL
+            GLESv3
+        )
     elseif(PLATFORM_IOS)
         target_link_libraries(ului_app PRIVATE 
             angle_egl
