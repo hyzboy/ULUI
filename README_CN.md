@@ -1,0 +1,259 @@
+# ULUI - 跨平台 OpenGL ES 3.0 项目
+
+一个使用 Google ANGLE 实现的跨平台 OpenGL ES 3.0 项目，展示了一个简单的彩色三角形渲染示例。
+
+## 特性
+
+- **跨平台支持**: Windows, Linux, macOS, iOS, Android
+- **现代 CMake** (3.20+) 构建系统
+- **C++20** 标准
+- **OpenGL ES 3.0** 通过 Google ANGLE 项目实现
+- **GLFW** 用于桌面平台的窗口管理
+- 简单的彩色三角形渲染示例
+
+## 项目需求
+
+### 所有平台
+- CMake 3.20 或更高版本
+- 支持 C++20 的编译器
+- Google ANGLE 库 (libEGL, libGLESv2)
+
+### 桌面平台 (Windows/Linux/macOS)
+- GLFW (通过 CMake FetchContent 自动下载)
+
+### Windows
+- Visual Studio 2019 或更高版本 / MinGW-w64
+- Windows SDK
+
+### Linux
+- GCC 10+ 或 Clang 11+
+- X11 开发库
+- Mesa 或 ANGLE 库
+
+### macOS
+- Xcode 12+
+- macOS 10.15+
+
+### iOS
+- Xcode 12+
+- iOS SDK 13.0+
+
+### Android
+- Android NDK r21+
+- Android SDK
+- Gradle
+
+## 构建方法
+
+### 桌面平台 (Windows/Linux/macOS)
+
+```bash
+# 创建构建目录
+mkdir build
+cd build
+
+# 配置
+cmake ..
+
+# 构建
+cmake --build .
+
+# 运行
+./bin/ului_app  # Linux/macOS
+# 或
+.\bin\ului_app.exe  # Windows
+```
+
+### 高级构建选项
+
+```bash
+# Release 构建
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . --config Release
+
+# 指定编译器
+cmake -DCMAKE_CXX_COMPILER=clang++ ..
+
+# 禁用 ANGLE (使用原生 OpenGL ES)
+cmake -DUSE_ANGLE=OFF ..
+```
+
+### iOS
+
+```bash
+mkdir build-ios
+cd build-ios
+
+cmake .. \
+    -GXcode \
+    -DCMAKE_SYSTEM_NAME=iOS \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0
+
+# 在 Xcode 中打开
+open ULUI.xcodeproj
+```
+
+### Android
+
+```bash
+mkdir build-android
+cd build-android
+
+cmake .. \
+    -DCMAKE_SYSTEM_NAME=Android \
+    -DCMAKE_ANDROID_NDK=/path/to/ndk \
+    -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
+    -DCMAKE_ANDROID_STL_TYPE=c++_shared
+
+cmake --build .
+```
+
+## 项目结构
+
+```
+ULUI/
+├── CMakeLists.txt          # 根 CMake 配置
+├── README.md               # 英文说明文档
+├── README_CN.md            # 中文说明文档（本文件）
+├── LICENSE                 # 许可证文件
+├── .gitignore             # Git 忽略规则
+├── build.sh               # Linux/macOS 构建脚本
+├── external/              # 外部依赖
+│   ├── CMakeLists.txt     # 外部依赖 CMake 配置
+│   └── angle/             # ANGLE 头文件
+│       └── include/
+│           ├── EGL/       # EGL 头文件
+│           └── GLES3/     # OpenGL ES 3.0 头文件
+├── include/               # 公共头文件
+│   └── triangle_app.h     # 三角形应用程序头文件
+├── src/                   # 源文件
+│   ├── CMakeLists.txt     # 源文件 CMake 配置
+│   ├── main.cpp           # 主入口点（平台相关）
+│   └── triangle_app.cpp   # 三角形渲染实现
+├── shaders/               # GLSL 着色器
+│   ├── triangle.vert      # 顶点着色器
+│   └── triangle.frag      # 片段着色器
+└── docs/                  # 文档
+    ├── ANGLE_INTEGRATION.md  # ANGLE 集成指南
+    └── BUILD_GUIDE.md        # 详细构建指南
+```
+
+## ANGLE 集成
+
+本项目使用 Google 的 ANGLE (Almost Native Graphics Layer Engine) 在所有平台上提供 OpenGL ES 3.0 支持。ANGLE 将 OpenGL ES API 调用转换为：
+- **Windows**: Direct3D 11
+- **macOS**: Metal
+- **Linux**: Vulkan 或原生 OpenGL
+
+### 安装 ANGLE
+
+#### Windows
+从 ANGLE 发布页面下载预构建的 ANGLE 二进制文件，或从源代码构建。
+
+#### Linux
+```bash
+# Ubuntu/Debian
+sudo apt-get install libegl1-mesa-dev libgles2-mesa-dev
+
+# 或从源代码构建 ANGLE
+```
+
+#### macOS
+```bash
+# 使用 Homebrew（如果可用）
+# 或从源代码构建 ANGLE
+```
+
+详细的 ANGLE 集成说明请参阅 [docs/ANGLE_INTEGRATION.md](docs/ANGLE_INTEGRATION.md)。
+
+## 使用方法
+
+应用程序创建一个窗口并渲染一个彩色三角形：
+- **红色**顶点在顶部
+- **绿色**顶点在左下角
+- **蓝色**顶点在右下角
+
+按 **ESC** 键关闭应用程序（桌面平台）。
+
+## 自定义
+
+### 修改三角形
+
+编辑 `src/triangle_app.cpp` 来更改：
+- 顶点位置
+- 颜色
+- 三角形形状
+
+### 着色器
+
+修改 `shaders/` 目录中的 GLSL 着色器：
+- `triangle.vert` - 顶点着色器
+- `triangle.frag` - 片段着色器
+
+两个着色器都使用 GLSL ES 3.0 语法 (`#version 300 es`)。
+
+## 技术细节
+
+- **C++ 标准**: C++20
+- **CMake 版本**: 3.20+
+- **OpenGL ES 版本**: 3.0
+- **GLSL 版本**: 3.00 ES
+- **窗口系统**: GLFW 3.4 (桌面), 原生 (移动)
+
+## 许可证
+
+详见 LICENSE 文件。
+
+## 贡献
+
+欢迎贡献！请确保：
+- 代码遵循 C++20 最佳实践
+- CMake 配置保持跨平台兼容性
+- 在多个平台上测试更改
+
+## 故障排除
+
+### 找不到 GLFW
+GLFW 通过 CMake FetchContent 自动下载。确保在配置期间有互联网连接。
+
+### 找不到 ANGLE 库
+确保系统上已安装 ANGLE，或将库放在 CMake 可以找到的位置。
+
+### 着色器编译错误
+检查着色器文件是否已复制到构建目录。CMake 应自动处理此操作。
+
+### 启动时黑屏
+验证：
+1. ANGLE/OpenGL ES 驱动程序已正确安装
+2. 您的 GPU 支持 OpenGL ES 3.0 或等效版本
+3. 着色器文件可在 `shaders/` 目录中访问
+
+## 详细文档
+
+- [构建指南](docs/BUILD_GUIDE.md) - 所有平台的详细构建说明
+- [ANGLE 集成](docs/ANGLE_INTEGRATION.md) - ANGLE 安装和配置指南
+
+## 参考资源
+
+- [ANGLE 项目](https://github.com/google/angle)
+- [ANGLE 文档](https://chromium.googlesource.com/angle/angle/+/HEAD/README.md)
+- [OpenGL ES 3.0 规范](https://www.khronos.org/opengles/)
+- [GLFW 文档](https://www.glfw.org/documentation.html)
+- [CMake 文档](https://cmake.org/documentation/)
+
+## 快速开始
+
+```bash
+# 克隆仓库
+git clone https://github.com/hyzboy/ULUI.git
+cd ULUI
+
+# 构建项目
+./build.sh  # Linux/macOS
+
+# 运行应用程序
+cd build/bin
+./ului_app
+```
+
+项目已在 Linux 上成功构建和测试。Windows 和 macOS 平台的构建流程相同。
