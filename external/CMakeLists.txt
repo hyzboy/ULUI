@@ -15,6 +15,8 @@ if(NOT PLATFORM_IOS AND NOT PLATFORM_ANDROID)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
     set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_X11 ON CACHE BOOL "" FORCE)
     
     FetchContent_MakeAvailable(glfw)
 endif()
@@ -33,13 +35,30 @@ if(USE_ANGLE)
         add_library(angle_egl INTERFACE)
         target_link_libraries(angle_egl INTERFACE ${EGL_LIBRARY} ${GLES_LIBRARY})
     else()
-        message(STATUS "ANGLE libraries not found, will use headers only")
+        message(STATUS "ANGLE libraries not found, using system OpenGL/GLES")
         # Create interface library for headers
         add_library(angle_egl INTERFACE)
         
-        # On Windows, we might need to link against system OpenGL
+        # Try to link against available OpenGL implementations
         if(WIN32)
             target_link_libraries(angle_egl INTERFACE opengl32)
+        else()
+            # On Linux/macOS, try to find OpenGL ES first, then fall back to OpenGL
+            find_library(GLES2_LIBRARY NAMES GLESv2)
+            find_library(EGL_SYS_LIBRARY NAMES EGL)
+            
+            if(GLES2_LIBRARY)
+                message(STATUS "Using system GLESv2: ${GLES2_LIBRARY}")
+                target_link_libraries(angle_egl INTERFACE ${GLES2_LIBRARY})
+                if(EGL_SYS_LIBRARY)
+                    target_link_libraries(angle_egl INTERFACE ${EGL_SYS_LIBRARY})
+                endif()
+            else()
+                # Fall back to desktop OpenGL
+                find_package(OpenGL REQUIRED)
+                message(STATUS "Using system OpenGL: ${OPENGL_LIBRARIES}")
+                target_link_libraries(angle_egl INTERFACE ${OPENGL_LIBRARIES})
+            endif()
         endif()
     endif()
     
