@@ -9,6 +9,7 @@
 - **C++20** 标准
 - **OpenGL ES 3.0** 通过 Google ANGLE 项目实现
 - **GLFW** 用于桌面平台的窗口管理
+- **跨平台文件系统**抽象，支持资产和外部文件
 - 简单的彩色三角形渲染示例
 
 ## 项目需求
@@ -152,17 +153,21 @@ ULUI/
 │           ├── EGL/       # EGL 头文件
 │           └── GLES3/     # OpenGL ES 3.0 头文件
 ├── include/               # 公共头文件
-│   └── triangle_app.h     # 三角形应用程序头文件
+│   ├── triangle_app.h     # 三角形应用程序头文件
+│   └── file_system.h      # 跨平台文件 I/O 抽象
 ├── src/                   # 源文件
 │   ├── CMakeLists.txt     # 源文件 CMake 配置
 │   ├── main.cpp           # 主入口点（平台相关）
-│   └── triangle_app.cpp   # 三角形渲染实现
+│   ├── triangle_app.cpp   # 三角形渲染实现
+│   └── file_system.cpp    # 文件系统实现
 ├── shaders/               # GLSL 着色器
 │   ├── triangle.vert      # 顶点着色器
 │   └── triangle.frag      # 片段着色器
 └── docs/                  # 文档
     ├── ANGLE_INTEGRATION.md  # ANGLE 集成指南
-    └── BUILD_GUIDE.md        # 详细构建指南
+    ├── BUILD_GUIDE.md        # 详细构建指南
+    ├── FILE_SYSTEM.md        # 文件系统抽象指南
+    └── FILE_SYSTEM_CN.md     # 文件系统指南（中文）
 ```
 
 ## ANGLE 集成
@@ -192,6 +197,38 @@ sudo apt-get install libegl1-mesa-dev libgles2-mesa-dev
 ```
 
 详细的 ANGLE 集成说明请参阅 [docs/ANGLE_INTEGRATION.md](docs/ANGLE_INTEGRATION.md)。
+
+## 文件系统抽象
+
+ULUI 提供跨平台文件系统抽象，处理：
+
+- **内部资产（只读）**：
+  - Android: APK 资产
+  - iOS: 应用包资源
+  - 桌面: 可执行文件旁的 `assets/` 目录
+
+- **外部文件（读写）**：
+  - 所有平台的标准文件系统访问
+  - 平台特定的用户数据目录
+
+### 快速示例
+
+```cpp
+#include "file_system.h"
+using namespace ului;
+
+// 初始化
+FileSystem::Initialize();
+
+// 从内部资产读取着色器
+std::string shader = FileSystem::ReadAssetText("shaders/triangle.vert");
+
+// 写入存档文件到外部存储
+std::string savePath = FileSystem::GetExternalDataPath() + "save.dat";
+FileSystem::WriteExternalBinary(savePath.c_str(), saveData);
+```
+
+完整文档请参阅 [docs/FILE_SYSTEM_CN.md](docs/FILE_SYSTEM_CN.md)。
 
 ## 使用方法
 

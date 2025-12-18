@@ -9,6 +9,7 @@ A cross-platform OpenGL ES 3.0 project using Google's ANGLE implementation for r
 - **C++20** standard
 - **OpenGL ES 3.0** via Google ANGLE Project
 - **GLFW** for desktop window management
+- **Cross-platform file system** abstraction for assets and external files
 - Simple colored triangle rendering example
 
 ## Requirements
@@ -153,11 +154,13 @@ ULUI/
 │           ├── EGL/       # EGL headers
 │           └── GLES3/     # OpenGL ES 3.0 headers
 ├── include/               # Public headers
-│   └── triangle_app.h     # Triangle application header
+│   ├── triangle_app.h     # Triangle application header
+│   └── file_system.h      # Cross-platform file I/O abstraction
 ├── src/                   # Source files
 │   ├── CMakeLists.txt     # Source CMake configuration
 │   ├── main.cpp           # Main entry point (platform-specific)
-│   └── triangle_app.cpp   # Triangle rendering implementation
+│   ├── triangle_app.cpp   # Triangle rendering implementation
+│   └── file_system.cpp    # File system implementation
 ├── shaders/               # GLSL shaders
 │   ├── triangle.vert      # Vertex shader
 │   └── triangle.frag      # Fragment shader
@@ -173,6 +176,8 @@ ULUI/
 └── docs/                  # Documentation
     ├── BUILD_GUIDE.md     # Detailed build guide
     ├── ANGLE_INTEGRATION.md
+    ├── FILE_SYSTEM.md     # File system abstraction guide
+    ├── FILE_SYSTEM_CN.md  # File system guide (Chinese)
     └── PROJECT_SUMMARY.md
 ```
 
@@ -201,6 +206,38 @@ sudo apt-get install libegl1-mesa-dev libgles2-mesa-dev
 # Using Homebrew (if available)
 # Or build ANGLE from source
 ```
+
+## File System Abstraction
+
+ULUI provides a cross-platform file system abstraction that handles:
+
+- **Internal Assets (Read-Only)**:
+  - Android: APK assets
+  - iOS: App bundle resources
+  - Desktop: `assets/` directory next to executable
+
+- **External Files (Read-Write)**:
+  - Standard file system access on all platforms
+  - Platform-specific user data directories
+
+### Quick Example
+
+```cpp
+#include "file_system.h"
+using namespace ului;
+
+// Initialize
+FileSystem::Initialize();
+
+// Read shader from internal assets
+std::string shader = FileSystem::ReadAssetText("shaders/triangle.vert");
+
+// Write save file to external storage
+std::string savePath = FileSystem::GetExternalDataPath() + "save.dat";
+FileSystem::WriteExternalBinary(savePath.c_str(), saveData);
+```
+
+See [docs/FILE_SYSTEM.md](docs/FILE_SYSTEM.md) for complete documentation.
 
 ## Usage
 

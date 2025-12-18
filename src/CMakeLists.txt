@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.20)
 set(SOURCES
     main.cpp
     triangle_app.cpp
+    file_system.cpp
 )
 
 # Create executable or shared library based on platform
@@ -79,9 +80,13 @@ target_compile_definitions(ului_app PRIVATE
 )
 
 # Copy shaders to build directory
-add_custom_command(TARGET ului_app POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/shaders
-    $<TARGET_FILE_DIR:ului_app>/shaders
-    COMMENT "Copying shaders to build directory"
-)
+# For desktop platforms, copy to assets subdirectory
+# For mobile platforms, they will be in the app bundle/APK assets
+if(NOT PLATFORM_ANDROID AND NOT PLATFORM_IOS)
+    add_custom_command(TARGET ului_app POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/shaders
+        $<TARGET_FILE_DIR:ului_app>/assets/shaders
+        COMMENT "Copying shaders to assets directory"
+    )
+endif()

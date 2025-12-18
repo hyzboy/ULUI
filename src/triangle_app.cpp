@@ -1,8 +1,11 @@
 #include "triangle_app.h"
+#include "file_system.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <vector>
+
+using namespace ului;
 
 TriangleApp::TriangleApp()
     : m_width(0)
@@ -23,15 +26,8 @@ TriangleApp::~TriangleApp()
 
 std::string TriangleApp::readShaderFile(const char* filename)
 {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Failed to open shader file: " << filename << std::endl;
-        return "";
-    }
-    
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
+    // Use FileSystem to read shader from internal assets
+    return FileSystem::ReadAssetText(filename);
 }
 
 bool TriangleApp::compileShader(GLuint shader, const char* source)

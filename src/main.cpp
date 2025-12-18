@@ -1,6 +1,9 @@
 #include "triangle_app.h"
+#include "file_system.h"
 #include <iostream>
 #include <cstdlib>
+
+using namespace ului;
 
 #ifndef PLATFORM_IOS
 #ifndef PLATFORM_ANDROID
@@ -42,6 +45,9 @@ static void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 int main()
 {
     std::cout << "ULUI - OpenGL ES 3.0 Triangle Example with ANGLE" << std::endl;
+    
+    // Initialize FileSystem with default asset path
+    FileSystem::Initialize("assets/");
     
     // Initialize GLFW
     glfwSetErrorCallback(errorCallback);
@@ -110,6 +116,7 @@ int main()
     app.cleanup();
     glfwDestroyWindow(window);
     glfwTerminate();
+    FileSystem::Shutdown();
     
     std::cout << "Application terminated successfully" << std::endl;
     return EXIT_SUCCESS;
@@ -222,6 +229,12 @@ void android_main(android_app* state)
     state->userData = &androidApp;
     state->onAppCmd = handleCmd;
     
+    // Initialize FileSystem with Android asset manager
+    FileSystem::Initialize(nullptr);
+#ifdef __ANDROID__
+    FileSystem::SetAndroidAssetManager(state->activity->assetManager);
+#endif
+    
     while (true) {
         int events;
         android_poll_source* source;
@@ -234,6 +247,7 @@ void android_main(android_app* state)
             
             if (state->destroyRequested != 0) {
                 terminateEGL(&androidApp);
+                FileSystem::Shutdown();
                 return;
             }
         }
