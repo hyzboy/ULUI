@@ -295,6 +295,75 @@ bool loadShaders() {
 }
 ```
 
+## Special Directory APIs
+
+The FileSystem provides convenient access to platform-specific special directories:
+
+### Application Directories
+
+```cpp
+// Temporary files (cleared by OS)
+std::string tempDir = FileSystem::GetTempDirectory();
+// Windows: %LOCALAPPDATA%\Temp
+// Linux: /tmp
+// Android: /data/local/tmp
+
+// Persistent app data (roaming/synced)
+std::string appData = FileSystem::GetAppDataDirectory();
+// Windows: %APPDATA% (Roaming)
+// Linux: ~/.config
+// macOS: ~/Library/Application Support
+
+// Local persistent app data (non-roaming)
+std::string localAppData = FileSystem::GetLocalAppDataDirectory();
+// Windows: %LOCALAPPDATA%
+// Linux: ~/.local/share
+
+// Public documents (user-visible, for mods/DLC/configs)
+std::string publicDocs = FileSystem::GetPublicDocumentsDirectory();
+// Windows: %USERPROFILE%\Documents
+// All: ~/Documents or similar
+
+// External storage (mobile only)
+std::string externalStorage = FileSystem::GetExternalStorageDirectory();
+// Android: SD card app data directory
+// Desktop/iOS: Returns empty string
+```
+
+### Common User Directories
+
+```cpp
+std::string docs = FileSystem::GetUserDocumentsDirectory();
+std::string pics = FileSystem::GetUserPicturesDirectory();
+std::string music = FileSystem::GetUserMusicDirectory();
+std::string videos = FileSystem::GetUserVideosDirectory();
+std::string downloads = FileSystem::GetUserDownloadsDirectory();
+std::string home = FileSystem::GetUserHomeDirectory();
+```
+
+### Usage Example: Proper File Organization
+
+```cpp
+// Config files (synced across devices on Windows)
+std::string configPath = FileSystem::GetAppDataDirectory() + "config.ini";
+FileSystem::WriteExternalText(configPath.c_str(), configData);
+
+// Cache files (local only, can be large)
+std::string cachePath = FileSystem::GetLocalAppDataDirectory() + "cache.dat";
+FileSystem::WriteExternalBinary(cachePath.c_str(), cacheData);
+
+// User mods/DLC (user-accessible)
+std::string modsPath = FileSystem::GetPublicDocumentsDirectory() + "MyGame/Mods/";
+
+// Temporary files (automatically cleaned up)
+std::string tempFile = FileSystem::GetTempDirectory() + "temp_" + std::to_string(time(nullptr)) + ".tmp";
+
+// Android external storage (for large files)
+#ifdef __ANDROID__
+std::string externalPath = FileSystem::GetExternalStorageDirectory() + "downloads/";
+#endif
+```
+
 ## Example: Save/Load Game State
 
 ```cpp
@@ -309,8 +378,8 @@ void saveGameState(const GameState& state) {
     
     std::string json = j.dump();
     
-    // Write to external storage
-    std::string savePath = FileSystem::GetExternalDataPath() + "save.json";
+    // Write to persistent app data directory
+    std::string savePath = FileSystem::GetAppDataDirectory() + "save.json";
     if (!FileSystem::WriteExternalText(savePath.c_str(), json)) {
         std::cerr << "Failed to save game state" << std::endl;
     }
@@ -341,21 +410,44 @@ GameState loadGameState() {
 
 See [`include/file_system.h`](../include/file_system.h) for complete API documentation.
 
-### Key Functions
+### Core Functions
 
 - `Initialize(assetPath)` - Initialize file system
 - `Shutdown()` - Cleanup resources
+
+### Internal Assets (Read-Only)
+
 - `ReadAssetText(filename)` - Read text from internal assets
 - `ReadAssetBinary(filename)` - Read binary from internal assets
+- `AssetExists(filename)` - Check if internal asset exists
+- `GetAssetPath()` - Get internal assets directory
+
+### External Files (Read-Write)
+
 - `ReadExternalText(filepath)` - Read text from external file
 - `ReadExternalBinary(filepath)` - Read binary from external file
 - `WriteExternalText(filepath, content)` - Write text to external file
 - `WriteExternalBinary(filepath, data)` - Write binary to external file
-- `AssetExists(filename)` - Check if internal asset exists
 - `ExternalFileExists(filepath)` - Check if external file exists
 - `DeleteExternalFile(filepath)` - Delete external file
-- `GetAssetPath()` - Get internal assets directory
-- `GetExternalDataPath()` - Get writable data directory
+- `GetExternalDataPath()` - Get writable data directory (deprecated, use special directory APIs)
+
+### Special Directory APIs
+
+**Application Directories:**
+- `GetTempDirectory()` - Temporary files directory
+- `GetAppDataDirectory()` - Persistent app data (roaming/synced)
+- `GetLocalAppDataDirectory()` - Local persistent app data (non-roaming)
+- `GetPublicDocumentsDirectory()` - User-visible documents directory
+- `GetExternalStorageDirectory()` - External storage app directory (mobile only)
+
+**Common User Directories:**
+- `GetUserDocumentsDirectory()` - User's Documents directory
+- `GetUserPicturesDirectory()` - User's Pictures directory
+- `GetUserMusicDirectory()` - User's Music directory
+- `GetUserVideosDirectory()` - User's Videos directory
+- `GetUserDownloadsDirectory()` - User's Downloads directory
+- `GetUserHomeDirectory()` - User's home directory (desktop only)
 
 ## Troubleshooting
 

@@ -126,6 +126,115 @@ public:
      * - Desktop: Current working directory or user documents
      */
     static std::string GetExternalDataPath();
+    
+    // ===== Special Directory APIs =====
+    
+    /**
+     * @brief Get temporary directory for application temporary files
+     * @return Platform-specific temporary directory
+     * 
+     * Returns:
+     * - Windows: %LOCALAPPDATA%\Temp or %TEMP%
+     * - Linux/macOS: /tmp or $TMPDIR
+     * - Android: Context.getCacheDir()
+     * - iOS: NSTemporaryDirectory()
+     */
+    static std::string GetTempDirectory();
+    
+    /**
+     * @brief Get persistent application data directory (roaming/synced)
+     * @return Platform-specific persistent app data directory
+     * 
+     * Returns:
+     * - Windows: %APPDATA% (Roaming profile)
+     * - Linux: $XDG_CONFIG_HOME or ~/.config
+     * - macOS: ~/Library/Application Support
+     * - Android: Context.getFilesDir()
+     * - iOS: Application Support directory
+     */
+    static std::string GetAppDataDirectory();
+    
+    /**
+     * @brief Get local persistent application data directory (non-roaming)
+     * @return Platform-specific local app data directory
+     * 
+     * Returns:
+     * - Windows: %LOCALAPPDATA%
+     * - Linux: $XDG_DATA_HOME or ~/.local/share
+     * - macOS: ~/Library/Application Support
+     * - Android: Same as GetAppDataDirectory()
+     * - iOS: Same as GetAppDataDirectory()
+     */
+    static std::string GetLocalAppDataDirectory();
+    
+    /**
+     * @brief Get public persistent directory for user-visible data
+     * @return Platform-specific public documents directory
+     * 
+     * User-visible directory for configs, mods, DLC, etc.
+     * Returns:
+     * - Windows: %USERPROFILE%\Documents or My Documents
+     * - Linux: $XDG_DOCUMENTS_DIR or ~/Documents
+     * - macOS: ~/Documents
+     * - Android: getExternalFilesDir(DIRECTORY_DOCUMENTS)
+     * - iOS: Documents directory (user-visible in Files app)
+     */
+    static std::string GetPublicDocumentsDirectory();
+    
+    /**
+     * @brief Get external storage app data directory (mobile only)
+     * @return Platform-specific external storage directory
+     * 
+     * Returns:
+     * - Android: getExternalFilesDir(null) - SD card/external storage
+     * - iOS: Not applicable, returns empty string
+     * - Desktop: Not applicable, returns empty string
+     */
+    static std::string GetExternalStorageDirectory();
+    
+    // ===== Common User Directories =====
+    
+    /**
+     * @brief Get user's Documents directory
+     * @return Platform-specific Documents directory
+     */
+    static std::string GetUserDocumentsDirectory();
+    
+    /**
+     * @brief Get user's Pictures/Photos directory
+     * @return Platform-specific Pictures directory
+     */
+    static std::string GetUserPicturesDirectory();
+    
+    /**
+     * @brief Get user's Music directory
+     * @return Platform-specific Music directory
+     */
+    static std::string GetUserMusicDirectory();
+    
+    /**
+     * @brief Get user's Videos directory
+     * @return Platform-specific Videos directory
+     */
+    static std::string GetUserVideosDirectory();
+    
+    /**
+     * @brief Get user's Downloads directory
+     * @return Platform-specific Downloads directory
+     */
+    static std::string GetUserDownloadsDirectory();
+    
+    /**
+     * @brief Get user's home directory
+     * @return Platform-specific home directory
+     * 
+     * Returns:
+     * - Windows: %USERPROFILE%
+     * - Linux/macOS: $HOME or ~
+     * - Android: Not applicable, returns empty string
+     * - iOS: Not applicable, returns empty string
+     */
+    static std::string GetUserHomeDirectory();
 
 #ifdef __ANDROID__
     /**
