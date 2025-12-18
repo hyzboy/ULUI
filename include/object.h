@@ -3,6 +3,7 @@
 #include "logger.h"
 #include <string>
 #include <typeinfo>
+#include <cstdarg>
 
 namespace ului {
 

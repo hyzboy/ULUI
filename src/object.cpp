@@ -54,16 +54,30 @@ std::string Object::ExtractClassName(const std::type_info& typeInfo)
 
 void Object::LogInternal(Logger::LogLevel level, const char* format, va_list args) const
 {
-    // Format the user message
-    char buffer[2048];
-    vsnprintf(buffer, sizeof(buffer), format, args);
+    // Format the user message with bounds checking
+    char buffer[4096];  // Increased buffer size for longer messages
+    int result = vsnprintf(buffer, sizeof(buffer), format, args);
+    
+    // Check if message was truncated
+    if (result >= static_cast<int>(sizeof(buffer))) {
+        // Message was truncated, indicate this in the buffer
+        const char* truncated = "... [TRUNCATED]";
+        size_t truncLen = strlen(truncated);
+        if (sizeof(buffer) > truncLen) {
+            strcpy(buffer + sizeof(buffer) - truncLen - 1, truncated);
+        }
+    }
     
     // Create the full tag with [ClassName][TAG] format
-    char fullTag[512];
-    snprintf(fullTag, sizeof(fullTag), "[%s][%s]", m_className.c_str(), m_tag.c_str());
+    // Limit class name and tag lengths to prevent overflow
+    std::string fullTag = "[";
+    fullTag += (m_className.length() > 128 ? m_className.substr(0, 128) : m_className);
+    fullTag += "][";
+    fullTag += (m_tag.length() > 128 ? m_tag.substr(0, 128) : m_tag);
+    fullTag += "]";
     
     // Use the logger's write function
-    Logger::Log::Write(level, fullTag, "%s", buffer);
+    Logger::Log::Write(level, fullTag.c_str(), "%s", buffer);
 }
 
 void Object::LogV(const char* format, ...) const
