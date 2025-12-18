@@ -10,6 +10,7 @@ A cross-platform OpenGL ES 3.0 project using Google's ANGLE implementation for r
 - **OpenGL ES 3.0** via Google ANGLE Project
 - **GLFW** for desktop window management
 - **Cross-platform file system** abstraction for assets and external files
+- **Comprehensive logging system** with multiple output targets (console, file, network, pipe, platform-specific)
 - Simple colored triangle rendering example
 
 ## Requirements
@@ -155,12 +156,14 @@ ULUI/
 │           └── GLES3/     # OpenGL ES 3.0 headers
 ├── include/               # Public headers
 │   ├── triangle_app.h     # Triangle application header
-│   └── file_system.h      # Cross-platform file I/O abstraction
+│   ├── file_system.h      # Cross-platform file I/O abstraction
+│   └── logger.h           # Cross-platform logging system
 ├── src/                   # Source files
 │   ├── CMakeLists.txt     # Source CMake configuration
-│   ├── main.cpp           # Main entry point (platform-specific)
+│   ├── main.cpp           # Desktop application entry point
 │   ├── triangle_app.cpp   # Triangle rendering implementation
-│   └── file_system.cpp    # File system implementation
+│   ├── file_system.cpp    # File system implementation
+│   └── logger.cpp         # Logger implementation
 ├── shaders/               # GLSL shaders
 │   ├── triangle.vert      # Vertex shader
 │   └── triangle.frag      # Fragment shader
@@ -178,6 +181,8 @@ ULUI/
     ├── ANGLE_INTEGRATION.md
     ├── FILE_SYSTEM.md     # File system abstraction guide
     ├── FILE_SYSTEM_CN.md  # File system guide (Chinese)
+    ├── LOGGER.md          # Logger system documentation
+    ├── LOGGER_CN.md       # Logger documentation (Chinese)
     └── PROJECT_SUMMARY.md
 ```
 

@@ -1,5 +1,6 @@
 #include "triangle_app.h"
 #include "file_system.h"
+#include "logger.h"
 #include <iostream>
 #include <cstdlib>
 
@@ -44,18 +45,22 @@ static void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 
 int main()
 {
-    std::cout << "ULUI - OpenGL ES 3.0 Triangle Example with ANGLE" << std::endl;
+    // Initialize Logger
+    Logger::Log::Initialize();
+    LOG_I("Main", "ULUI - OpenGL ES 3.0 Triangle Example with ANGLE");
     
     // Initialize FileSystem with default asset path
     FileSystem::Initialize("assets/");
+    LOG_D("Main", "FileSystem initialized with asset path: assets/");
     
     // Initialize GLFW
     glfwSetErrorCallback(errorCallback);
     
     if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
+        LOG_E("Main", "Failed to initialize GLFW");
         return EXIT_FAILURE;
     }
+    LOG_I("Main", "GLFW initialized successfully");
     
     // Configure GLFW for OpenGL ES 3.0
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
@@ -70,10 +75,11 @@ int main()
                                           "ULUI - Triangle Example", nullptr, nullptr);
     
     if (!window) {
-        std::cerr << "Failed to create GLFW window" << std::endl;
+        LOG_E("Main", "Failed to create GLFW window");
         glfwTerminate();
         return EXIT_FAILURE;
     }
+    LOG_I("Main", "Window created: %dx%d", WINDOW_WIDTH, WINDOW_HEIGHT);
     
     // Set callbacks
     glfwSetKeyCallback(window, keyCallback);
@@ -91,14 +97,15 @@ int main()
     
     // Initialize triangle app
     TriangleApp app;
+    LOG_I("Main", "Initializing triangle app with framebuffer size: %dx%d", fbWidth, fbHeight);
     if (!app.initialize(fbWidth, fbHeight)) {
-        std::cerr << "Failed to initialize triangle app" << std::endl;
+        LOG_E("Main", "Failed to initialize triangle app");
         glfwDestroyWindow(window);
         glfwTerminate();
         return EXIT_FAILURE;
     }
     
-    std::cout << "Starting render loop..." << std::endl;
+    LOG_I("Main", "Starting render loop...");
     
     // Main loop
     while (!glfwWindowShouldClose(window)) {
@@ -113,12 +120,14 @@ int main()
     }
     
     // Cleanup
+    LOG_I("Main", "Shutting down application");
     app.cleanup();
     glfwDestroyWindow(window);
     glfwTerminate();
     FileSystem::Shutdown();
+    LOG_I("Main", "Application terminated successfully");
+    Logger::Log::Shutdown();
     
-    std::cout << "Application terminated successfully" << std::endl;
     return EXIT_SUCCESS;
 }
 

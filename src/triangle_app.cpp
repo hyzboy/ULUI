@@ -1,5 +1,6 @@
 #include "triangle_app.h"
 #include "file_system.h"
+#include "logger.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -42,10 +43,11 @@ bool TriangleApp::compileShader(GLuint shader, const char* source)
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
         std::vector<char> log(logLength);
         glGetShaderInfoLog(shader, logLength, nullptr, log.data());
-        std::cerr << "Shader compilation failed: " << log.data() << std::endl;
+        LOG_E("TriangleApp", "Shader compilation failed: %s", log.data());
         return false;
     }
     
+    LOG_D("TriangleApp", "Shader compiled successfully");
     return true;
 }
 
@@ -60,10 +62,11 @@ bool TriangleApp::linkProgram(GLuint program)
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
         std::vector<char> log(logLength);
         glGetProgramInfoLog(program, logLength, nullptr, log.data());
-        std::cerr << "Program linking failed: " << log.data() << std::endl;
+        LOG_E("TriangleApp", "Program linking failed: %s", log.data());
         return false;
     }
     
+    LOG_D("TriangleApp", "Program linked successfully");
     return true;
 }
 
@@ -73,19 +76,21 @@ bool TriangleApp::initialize(int width, int height)
     m_height = height;
     
     // Print OpenGL ES information
-    std::cout << "OpenGL Vendor: " << glGetString(GL_VENDOR) << std::endl;
-    std::cout << "OpenGL Renderer: " << glGetString(GL_RENDERER) << std::endl;
-    std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
-    std::cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+    LOG_I("TriangleApp", "OpenGL Vendor: %s", glGetString(GL_VENDOR));
+    LOG_I("TriangleApp", "OpenGL Renderer: %s", glGetString(GL_RENDERER));
+    LOG_I("TriangleApp", "OpenGL Version: %s", glGetString(GL_VERSION));
+    LOG_I("TriangleApp", "GLSL Version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
     
     // Load shaders
+    LOG_D("TriangleApp", "Loading shader files");
     std::string vertexShaderSource = readShaderFile("shaders/triangle.vert");
     std::string fragmentShaderSource = readShaderFile("shaders/triangle.frag");
     
     if (vertexShaderSource.empty() || fragmentShaderSource.empty()) {
-        std::cerr << "Failed to load shader files" << std::endl;
+        LOG_E("TriangleApp", "Failed to load shader files");
         return false;
     }
+    LOG_D("TriangleApp", "Shaders loaded successfully");
     
     // Create and compile vertex shader
     m_vertexShader = glCreateShader(GL_VERTEX_SHADER);
