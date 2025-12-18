@@ -1,10 +1,18 @@
-#pragma once
-
 #include <string>
 #include <vector>
 #include <memory>
 #include <mutex>
 #include <cstdint>
+
+#pragma once
+
+// Undefine common macros that might conflict with our enum values
+#ifdef DEBUG
+#undef DEBUG
+#endif
+#ifdef ERROR
+#undef ERROR
+#endif
 
 namespace Logger {
 

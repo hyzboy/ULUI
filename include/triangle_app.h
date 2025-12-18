@@ -5,11 +5,12 @@
 #include <EGL/egl.h>
 #include <string>
 #include <memory>
+#include "object.h"
 
-class TriangleApp {
+class TriangleApp : public ului::Object {
 public:
     TriangleApp();
-    ~TriangleApp();
+    ~TriangleApp() override;
 
     bool initialize(int width, int height);
     void render();

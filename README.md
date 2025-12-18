@@ -9,6 +9,7 @@ A cross-platform OpenGL ES 3.0 project using Google's ANGLE implementation for r
 - **C++20** standard
 - **OpenGL ES 3.0** via Google ANGLE Project
 - **GLFW** for desktop window management
+- **Object-oriented base class** with automatic class name detection and TAG-based logging
 - **Cross-platform file system** abstraction for assets and external files
 - **Comprehensive logging system** with multiple output targets (console, file, network, pipe, platform-specific)
 - Simple colored triangle rendering example
@@ -179,6 +180,8 @@ ULUI/
 └── docs/                  # Documentation
     ├── BUILD_GUIDE.md     # Detailed build guide
     ├── ANGLE_INTEGRATION.md
+    ├── OBJECT.md          # Object base class documentation
+    ├── OBJECT_CN.md       # Object documentation (Chinese)
     ├── FILE_SYSTEM.md     # File system abstraction guide
     ├── FILE_SYSTEM_CN.md  # File system guide (Chinese)
     ├── LOGGER.md          # Logger system documentation
@@ -243,6 +246,32 @@ FileSystem::WriteExternalBinary(savePath.c_str(), saveData);
 ```
 
 See [docs/FILE_SYSTEM.md](docs/FILE_SYSTEM.md) for complete documentation.
+
+## Object Base Class
+
+ULUI provides a base class for all functionality classes with automatic logging support:
+
+```cpp
+#include "object.h"
+
+class MyRenderer : public ului::Object {
+public:
+    MyRenderer() : Object("Renderer") {
+        LogI("MyRenderer initialized");
+    }
+    
+    void Draw() {
+        LogD("Drawing frame");
+        // ... drawing code ...
+    }
+};
+
+// Log output format: [LogLevel][ClassName][TAG]message
+// [INFO][MyRenderer][Renderer]MyRenderer initialized
+// [DEBUG][MyRenderer][Renderer]Drawing frame
+```
+
+See [docs/OBJECT.md](docs/OBJECT.md) for complete documentation.
 
 ## Usage
 

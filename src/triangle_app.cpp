@@ -9,7 +9,8 @@
 using namespace ului;
 
 TriangleApp::TriangleApp()
-    : m_width(0)
+    : Object("Renderer")  // Initialize base Object with TAG
+    , m_width(0)
     , m_height(0)
     , m_shaderProgram(0)
     , m_vertexShader(0)
@@ -18,6 +19,7 @@ TriangleApp::TriangleApp()
     , m_positionAttrib(-1)
     , m_colorAttrib(-1)
 {
+    LogD("TriangleApp constructed");
 }
 
 TriangleApp::~TriangleApp()
@@ -43,11 +45,11 @@ bool TriangleApp::compileShader(GLuint shader, const char* source)
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
         std::vector<char> log(logLength);
         glGetShaderInfoLog(shader, logLength, nullptr, log.data());
-        LOG_E("TriangleApp", "Shader compilation failed: %s", log.data());
+        LogE("Shader compilation failed: %s", log.data());
         return false;
     }
     
-    LOG_D("TriangleApp", "Shader compiled successfully");
+    LogD("Shader compiled successfully");
     return true;
 }
 
@@ -62,11 +64,11 @@ bool TriangleApp::linkProgram(GLuint program)
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
         std::vector<char> log(logLength);
         glGetProgramInfoLog(program, logLength, nullptr, log.data());
-        LOG_E("TriangleApp", "Program linking failed: %s", log.data());
+        LogE("Program linking failed: %s", log.data());
         return false;
     }
     
-    LOG_D("TriangleApp", "Program linked successfully");
+    LogD("Program linked successfully");
     return true;
 }
 
@@ -76,21 +78,21 @@ bool TriangleApp::initialize(int width, int height)
     m_height = height;
     
     // Print OpenGL ES information
-    LOG_I("TriangleApp", "OpenGL Vendor: %s", glGetString(GL_VENDOR));
-    LOG_I("TriangleApp", "OpenGL Renderer: %s", glGetString(GL_RENDERER));
-    LOG_I("TriangleApp", "OpenGL Version: %s", glGetString(GL_VERSION));
-    LOG_I("TriangleApp", "GLSL Version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    LogI("OpenGL Vendor: %s", glGetString(GL_VENDOR));
+    LogI("OpenGL Renderer: %s", glGetString(GL_RENDERER));
+    LogI("OpenGL Version: %s", glGetString(GL_VERSION));
+    LogI("GLSL Version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
     
     // Load shaders
-    LOG_D("TriangleApp", "Loading shader files");
+    LogD("Loading shader files");
     std::string vertexShaderSource = readShaderFile("shaders/triangle.vert");
     std::string fragmentShaderSource = readShaderFile("shaders/triangle.frag");
     
     if (vertexShaderSource.empty() || fragmentShaderSource.empty()) {
-        LOG_E("TriangleApp", "Failed to load shader files");
+        LogE("Failed to load shader files");
         return false;
     }
-    LOG_D("TriangleApp", "Shaders loaded successfully");
+    LogD("Shaders loaded successfully");
     
     // Create and compile vertex shader
     m_vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -136,7 +138,7 @@ bool TriangleApp::initialize(int width, int height)
     // Set clear color
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     
-    std::cout << "Triangle app initialized successfully" << std::endl;
+    LogI("Triangle app initialized successfully with size %dx%d", m_width, m_height);
     return true;
 }
 

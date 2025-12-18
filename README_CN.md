@@ -9,6 +9,7 @@
 - **C++20** 标准
 - **OpenGL ES 3.0** 通过 Google ANGLE 项目实现
 - **GLFW** 用于桌面平台的窗口管理
+- **面向对象基类**，具有自动类名检测和基于TAG的日志记录
 - **跨平台文件系统**抽象，支持资产和外部文件
 - **完善的日志系统**，支持多种输出目标（控制台、文件、网络、管道、平台特定）
 - 简单的彩色三角形渲染示例
@@ -230,6 +231,32 @@ FileSystem::WriteExternalBinary(savePath.c_str(), saveData);
 ```
 
 完整文档请参阅 [docs/FILE_SYSTEM_CN.md](docs/FILE_SYSTEM_CN.md)。
+
+## Object 基类
+
+ULUI 为所有功能类提供一个带有自动日志支持的基类：
+
+```cpp
+#include "object.h"
+
+class MyRenderer : public ului::Object {
+public:
+    MyRenderer() : Object("Renderer") {
+        LogI("MyRenderer 已初始化");
+    }
+    
+    void Draw() {
+        LogD("正在绘制帧");
+        // ... 绘制代码 ...
+    }
+};
+
+// 日志输出格式：[日志级别][类名][TAG]消息
+// [INFO][MyRenderer][Renderer]MyRenderer 已初始化
+// [DEBUG][MyRenderer][Renderer]正在绘制帧
+```
+
+完整文档请参阅 [docs/OBJECT_CN.md](docs/OBJECT_CN.md)。
 
 ## 使用方法
 

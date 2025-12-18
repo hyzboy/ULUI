@@ -6,6 +6,7 @@ set(SOURCES
     triangle_app.cpp
     file_system.cpp
     logger.cpp
+    object.cpp
 )
 
 # Create executable or shared library based on platform
