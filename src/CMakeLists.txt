@@ -7,6 +7,7 @@ set(SOURCES
     file_system.cpp
     logger.cpp
     object.cpp
+    log/ObjectLogger.cpp
 )
 
 # Create executable or shared library based on platform
