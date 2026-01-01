@@ -1,5 +1,7 @@
 #include "logger.h"
 #include "file_system.h"
+#include <cstring>
+#include <chrono>
 #include <windows.h>
 #include <io.h>
 

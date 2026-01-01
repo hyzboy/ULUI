@@ -14,8 +14,8 @@ static const char* LOG_DIR_NAME = "Log";
 static const char* LOG_FILE_PREFIX = "ului_";
 static const char* LOG_FILE_EXTENSION = ".log";
 
-// Static members
-static std::vector<std::shared_ptr<LogOutput>> g_outputs;
+// Static members - g_outputs needs to be accessible from platform-specific files
+std::vector<std::shared_ptr<LogOutput>> g_outputs;
 static std::mutex g_outputsMutex;
 static LogLevel g_minLogLevel = LogLevel::VERBOSE;
 static std::string g_tagFilter;
