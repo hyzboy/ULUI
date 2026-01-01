@@ -88,6 +88,7 @@ typedef char GLchar;
 
 // Texture constants
 #define GL_TEXTURE_2D 0x0DE1
+#define GL_TEXTURE_EXTERNAL_OES 0x8D65  // OES external texture for Android camera/video
 #define GL_TEXTURE_CUBE_MAP 0x8513
 #define GL_TEXTURE_CUBE_MAP_POSITIVE_X 0x8515
 #define GL_TEXTURE_CUBE_MAP_NEGATIVE_X 0x8516

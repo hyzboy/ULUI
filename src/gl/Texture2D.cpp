@@ -9,8 +9,20 @@ Texture2D::Texture2D()
     , m_width(0)
     , m_height(0)
     , m_internalFormat(GL_RGBA8)
+    , m_textureType(TextureType::TEXTURE_2D)
 {
     LogD("Texture2D constructed");
+}
+
+Texture2D::Texture2D(TextureType type)
+    : Object("Texture2D")
+    , m_texture(0)
+    , m_width(0)
+    , m_height(0)
+    , m_internalFormat(GL_RGBA8)
+    , m_textureType(type)
+{
+    LogD("Texture2D constructed with type %d", static_cast<int>(type));
 }
 
 Texture2D::~Texture2D()
@@ -18,12 +30,14 @@ Texture2D::~Texture2D()
     Destroy();
 }
 
-bool Texture2D::Create()
+bool Texture2D::Create(TextureType type)
 {
     if (m_texture) {
         LogW("Texture2D already created");
         return true;
     }
+    
+    m_textureType = type;
     
     glGenTextures(1, &m_texture);
     if (m_texture == 0) {
@@ -31,7 +45,20 @@ bool Texture2D::Create()
         return false;
     }
     
-    LogD("Texture2D created successfully: %u", m_texture);
+    if (IsExternalOES()) {
+        LogD("External OES Texture2D created successfully: %u", m_texture);
+        // External textures have specific requirements
+        // Set default filter to LINEAR (NEAREST may not work on some devices)
+        glBindTexture(GL_TEXTURE_EXTERNAL_OES, m_texture);
+        glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+    } else {
+        LogD("Texture2D created successfully: %u", m_texture);
+    }
+    
     return true;
 }
 
@@ -42,12 +69,12 @@ void Texture2D::Bind(GLuint unit) const
         return;
     }
     glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glBindTexture(GetTarget(), m_texture);
 }
 
 void Texture2D::Unbind() const
 {
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GetTarget(), 0);
 }
 
 void Texture2D::SetImage(GLsizei width, GLsizei height, GLint internalFormat,
@@ -55,6 +82,11 @@ void Texture2D::SetImage(GLsizei width, GLsizei height, GLint internalFormat,
 {
     if (!m_texture) {
         LogE("Texture2D not created");
+        return;
+    }
+    
+    if (IsExternalOES()) {
+        LogE("Cannot call SetImage on external OES texture - data comes from SurfaceTexture");
         return;
     }
     
@@ -77,6 +109,11 @@ void Texture2D::SetSubImage(GLint xoffset, GLint yoffset, GLsizei width, GLsizei
         return;
     }
     
+    if (IsExternalOES()) {
+        LogE("Cannot call SetSubImage on external OES texture");
+        return;
+    }
+    
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset, width, height, format, type, data);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -91,10 +128,11 @@ void Texture2D::SetFilter(GLint minFilter, GLint magFilter)
         return;
     }
     
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    GLenum target = GetTarget();
+    glBindTexture(target, m_texture);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilter);
+    glBindTexture(target, 0);
     
     LogD("Texture2D filter set: min=%d, mag=%d", minFilter, magFilter);
 }
@@ -106,10 +144,11 @@ void Texture2D::SetWrap(GLint wrapS, GLint wrapT)
         return;
     }
     
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    GLenum target = GetTarget();
+    glBindTexture(target, m_texture);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapS);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapT);
+    glBindTexture(target, 0);
     
     LogD("Texture2D wrap set: S=%d, T=%d", wrapS, wrapT);
 }
@@ -121,6 +160,11 @@ void Texture2D::GenerateMipmap()
         return;
     }
     
+    if (IsExternalOES()) {
+        LogE("Cannot generate mipmaps for external OES texture");
+        return;
+    }
+    
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -128,11 +172,27 @@ void Texture2D::GenerateMipmap()
     LogD("Texture2D mipmap generated");
 }
 
+void Texture2D::SetExternalTextureSize(GLsizei width, GLsizei height)
+{
+    if (!IsExternalOES()) {
+        LogW("SetExternalTextureSize should only be called on external OES textures");
+    }
+    
+    m_width = width;
+    m_height = height;
+    LogD("External texture size set: %dx%d", width, height);
+}
+
+GLenum Texture2D::GetTarget() const
+{
+    return IsExternalOES() ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D;
+}
+
 void Texture2D::Destroy()
 {
     if (m_texture) {
         glDeleteTextures(1, &m_texture);
-        LogD("Texture2D destroyed: %u", m_texture);
+        LogD("Texture2D destroyed: %u (type=%d)", m_texture, static_cast<int>(m_textureType));
         m_texture = 0;
         m_width = 0;
         m_height = 0;

@@ -7,11 +7,30 @@ namespace ului {
 namespace gl {
 
 /**
- * Texture2D class for managing 2D textures
+ * Texture type enumeration
+ */
+enum class TextureType {
+    TEXTURE_2D,              // Standard 2D texture
+    TEXTURE_EXTERNAL_OES     // External OES texture (Android camera/video)
+};
+
+/**
+ * Texture2D class for managing 2D textures and external OES textures
+ * 
+ * Supports both standard GL_TEXTURE_2D and GL_TEXTURE_EXTERNAL_OES.
+ * External OES textures are used in Android for camera preview and
+ * video decoder output for zero-copy rendering.
  */
 class Texture2D : public Object {
 public:
     Texture2D();
+    
+    /**
+     * Create texture with specific type
+     * @param type Texture type (TEXTURE_2D or TEXTURE_EXTERNAL_OES)
+     */
+    explicit Texture2D(TextureType type);
+    
     ~Texture2D() override;
 
     // Disable copy
@@ -20,9 +39,10 @@ public:
 
     /**
      * Create and initialize the texture
+     * @param type Texture type (default: TEXTURE_2D)
      * @return true if successful, false otherwise
      */
-    bool Create();
+    bool Create(TextureType type = TextureType::TEXTURE_2D);
 
     /**
      * Bind this texture to the specified texture unit
@@ -36,7 +56,7 @@ public:
     void Unbind() const;
 
     /**
-     * Set texture image data
+     * Set texture image data (only for TEXTURE_2D, not for EXTERNAL_OES)
      * @param width Texture width
      * @param height Texture height
      * @param internalFormat Internal format (GL_RGBA8, GL_RGB8, etc.)
@@ -48,7 +68,7 @@ public:
                   GLenum format, GLenum type, const void* data = nullptr);
 
     /**
-     * Update part of the texture
+     * Update part of the texture (only for TEXTURE_2D)
      * @param xoffset X offset
      * @param yoffset Y offset
      * @param width Width of subregion
@@ -75,9 +95,18 @@ public:
     void SetWrap(GLint wrapS, GLint wrapT);
 
     /**
-     * Generate mipmaps for this texture
+     * Generate mipmaps for this texture (only for TEXTURE_2D)
      */
     void GenerateMipmap();
+
+    /**
+     * Set texture size for external textures
+     * External textures get their data from SurfaceTexture/MediaCodec
+     * but we still need to track dimensions for proper rendering
+     * @param width Texture width
+     * @param height Texture height
+     */
+    void SetExternalTextureSize(GLsizei width, GLsizei height);
 
     /**
      * Get the OpenGL texture handle
@@ -100,6 +129,21 @@ public:
     GLsizei GetHeight() const { return m_height; }
 
     /**
+     * Get texture type
+     */
+    TextureType GetType() const { return m_textureType; }
+
+    /**
+     * Check if this is an external OES texture
+     */
+    bool IsExternalOES() const { return m_textureType == TextureType::TEXTURE_EXTERNAL_OES; }
+
+    /**
+     * Get OpenGL texture target for this texture type
+     */
+    GLenum GetTarget() const;
+
+    /**
      * Destroy the texture and free resources
      */
     void Destroy();
@@ -109,6 +153,7 @@ private:
     GLsizei m_width;
     GLsizei m_height;
     GLint m_internalFormat;
+    TextureType m_textureType;
 };
 
 } // namespace gl
