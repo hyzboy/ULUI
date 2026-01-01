@@ -62,7 +62,7 @@ std::string GetLogFilePath() {
     auto time_t = std::chrono::system_clock::to_time_t(now);
     
     char buffer[64];
-    // Unix: use localtime_r
+    // Android: use thread-safe localtime_r
     struct tm timeinfo;
     localtime_r(&time_t, &timeinfo);
     std::strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M%S", &timeinfo);
@@ -74,8 +74,8 @@ std::string GetLogFilePath() {
 // Initialize platform-specific output
 void InitializePlatformOutput() {
     // Android: Add logcat output
-    // Note: File output to external storage is also added in logger_common.cpp
-    // after this function is called, so Android logs to both LogCat and file
+    // Note: File output is added by Log::Initialize() after this function,
+    // enabling dual LogCat and file logging on Android
     auto androidOutput = std::make_shared<AndroidOutput>();
     g_outputs.push_back(androidOutput);
 }
