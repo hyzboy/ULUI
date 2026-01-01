@@ -8,6 +8,11 @@ set(SOURCES
     logger.cpp
     object.cpp
     log/ObjectLogger.cpp
+    gl/ShaderProgram.cpp
+    gl/VBO.cpp
+    gl/VAO.cpp
+    gl/UBO.cpp
+    gl/SSBO.cpp
 )
 
 # Create executable or shared library based on platform

@@ -60,10 +60,24 @@ typedef char GLchar;
 
 #define GL_ARRAY_BUFFER 0x8892
 #define GL_ELEMENT_ARRAY_BUFFER 0x8893
+#define GL_UNIFORM_BUFFER 0x8A11
+#define GL_SHADER_STORAGE_BUFFER 0x90D2
 #define GL_STATIC_DRAW 0x88E4
 #define GL_DYNAMIC_DRAW 0x88E8
 
 #define GL_FLOAT 0x1406
+#define GL_BYTE 0x1400
+#define GL_UNSIGNED_BYTE 0x1401
+#define GL_SHORT 0x1402
+#define GL_UNSIGNED_SHORT 0x1403
+#define GL_INT 0x1404
+#define GL_UNSIGNED_INT 0x1405
+
+#define GL_READ_ONLY 0x88B8
+#define GL_WRITE_ONLY 0x88B9
+#define GL_READ_WRITE 0x88BA
+
+#define GL_INVALID_INDEX 0xFFFFFFFFu
 
 #define GL_VERSION 0x1F02
 #define GL_VENDOR 0x1F00
@@ -102,7 +116,18 @@ void glDeleteVertexArrays(GLsizei n, const GLuint *arrays);
 void glGenBuffers(GLsizei n, GLuint *buffers);
 void glBindBuffer(GLenum target, GLuint buffer);
 void glBufferData(GLenum target, GLsizeiptr size, const void *data, GLenum usage);
+void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
 void glDeleteBuffers(GLsizei n, const GLuint *buffers);
+
+// UBO and SSBO functions
+void glBindBufferBase(GLenum target, GLuint index, GLuint buffer);
+GLuint glGetUniformBlockIndex(GLuint program, const GLchar *uniformBlockName);
+void glUniformBlockBinding(GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
+void *glMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access);
+GLboolean glUnmapBuffer(GLenum target);
+
+// Vertex attribute functions
+void glVertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, const void *pointer);
 
 void glDrawArrays(GLenum mode, GLint first, GLsizei count);
 void glDrawElements(GLenum mode, GLsizei count, GLenum type, const void *indices);
