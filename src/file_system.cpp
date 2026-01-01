@@ -711,6 +711,17 @@ std::string FileSystem::GetUserHomeDirectory() {
 }
 
 #ifdef __ANDROID__
+void FileSystem::InitializeAndroid(void* assetManager, const char* packageName) {
+    // Initialize the base FileSystem
+    Initialize(nullptr);
+    
+    // Set Android-specific components
+    SetAndroidAssetManager(assetManager);
+    SetAndroidPackageName(packageName);
+    
+    std::cout << "FileSystem initialized for Android" << std::endl;
+}
+
 void FileSystem::SetAndroidAssetManager(void* assetManager) {
     s_assetManager = assetManager;
     std::cout << "Android AAssetManager set" << std::endl;

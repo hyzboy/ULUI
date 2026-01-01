@@ -238,6 +238,21 @@ public:
 
 #ifdef __ANDROID__
     /**
+     * @brief Initialize FileSystem for Android platform
+     * @param assetManager Pointer to AAssetManager from android_app
+     * @param packageName The Android application package name (e.g., "com.example.myapp")
+     * 
+     * This is the recommended way to initialize FileSystem on Android.
+     * It sets both the asset manager and package name in one call.
+     * 
+     * Example usage in android_main:
+     * @code
+     * FileSystem::InitializeAndroid(state->activity->assetManager, "com.example.myapp");
+     * @endcode
+     */
+    static void InitializeAndroid(void* assetManager, const char* packageName);
+    
+    /**
      * @brief Set Android AAssetManager for asset access
      * @param assetManager Pointer to AAssetManager from android_app
      * 
