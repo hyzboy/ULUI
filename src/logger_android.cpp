@@ -74,6 +74,8 @@ std::string GetLogFilePath() {
 // Initialize platform-specific output
 void InitializePlatformOutput() {
     // Android: Add logcat output
+    // Note: File output to external storage is also added in logger_common.cpp
+    // after this function is called, so Android logs to both LogCat and file
     auto androidOutput = std::make_shared<AndroidOutput>();
     g_outputs.push_back(androidOutput);
 }
