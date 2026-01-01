@@ -86,6 +86,66 @@ typedef char GLchar;
 
 #define GL_INVALID_INDEX 0xFFFFFFFFu
 
+// Texture constants
+#define GL_TEXTURE_2D 0x0DE1
+#define GL_TEXTURE_CUBE_MAP 0x8513
+#define GL_TEXTURE_CUBE_MAP_POSITIVE_X 0x8515
+#define GL_TEXTURE_CUBE_MAP_NEGATIVE_X 0x8516
+#define GL_TEXTURE_CUBE_MAP_POSITIVE_Y 0x8517
+#define GL_TEXTURE_CUBE_MAP_NEGATIVE_Y 0x8518
+#define GL_TEXTURE_CUBE_MAP_POSITIVE_Z 0x8519
+#define GL_TEXTURE_CUBE_MAP_NEGATIVE_Z 0x851A
+
+#define GL_TEXTURE_MIN_FILTER 0x2801
+#define GL_TEXTURE_MAG_FILTER 0x2800
+#define GL_TEXTURE_WRAP_S 0x2802
+#define GL_TEXTURE_WRAP_T 0x2803
+#define GL_TEXTURE_WRAP_R 0x8072
+
+#define GL_NEAREST 0x2600
+#define GL_LINEAR 0x2601
+#define GL_NEAREST_MIPMAP_NEAREST 0x2700
+#define GL_LINEAR_MIPMAP_NEAREST 0x2701
+#define GL_NEAREST_MIPMAP_LINEAR 0x2702
+#define GL_LINEAR_MIPMAP_LINEAR 0x2703
+
+#define GL_REPEAT 0x2901
+#define GL_CLAMP_TO_EDGE 0x812F
+#define GL_MIRRORED_REPEAT 0x8370
+
+#define GL_RGBA 0x1908
+#define GL_RGB 0x1907
+#define GL_DEPTH_COMPONENT 0x1902
+#define GL_DEPTH_STENCIL 0x84F9
+
+#define GL_RGBA8 0x8058
+#define GL_RGB8 0x8051
+#define GL_DEPTH_COMPONENT16 0x81A5
+#define GL_DEPTH_COMPONENT24 0x81A6
+#define GL_DEPTH24_STENCIL8 0x88F0
+
+#define GL_TEXTURE0 0x84C0
+#define GL_TEXTURE1 0x84C1
+#define GL_TEXTURE2 0x84C2
+#define GL_TEXTURE3 0x84C3
+#define GL_TEXTURE4 0x84C4
+#define GL_TEXTURE5 0x84C5
+#define GL_TEXTURE6 0x84C6
+#define GL_TEXTURE7 0x84C7
+
+// Framebuffer constants
+#define GL_FRAMEBUFFER 0x8D40
+#define GL_RENDERBUFFER 0x8D41
+#define GL_COLOR_ATTACHMENT0 0x8CE0
+#define GL_DEPTH_ATTACHMENT 0x8D00
+#define GL_STENCIL_ATTACHMENT 0x8D20
+#define GL_DEPTH_STENCIL_ATTACHMENT 0x821A
+
+#define GL_FRAMEBUFFER_COMPLETE 0x8CD5
+#define GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT 0x8CD6
+#define GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT 0x8CD7
+#define GL_FRAMEBUFFER_UNSUPPORTED 0x8CDD
+
 #define GL_VERSION 0x1F02
 #define GL_VENDOR 0x1F00
 #define GL_RENDERER 0x1F01
@@ -135,6 +195,33 @@ GLboolean glUnmapBuffer(GLenum target);
 
 // Vertex attribute functions
 void glVertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, const void *pointer);
+
+// Texture functions
+void glGenTextures(GLsizei n, GLuint *textures);
+void glBindTexture(GLenum target, GLuint texture);
+void glDeleteTextures(GLsizei n, const GLuint *textures);
+void glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, 
+                  GLint border, GLenum format, GLenum type, const void *data);
+void glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, 
+                     GLsizei width, GLsizei height, GLenum format, GLenum type, const void *data);
+void glTexParameteri(GLenum target, GLenum pname, GLint param);
+void glTexParameterf(GLenum target, GLenum pname, GLfloat param);
+void glGenerateMipmap(GLenum target);
+void glActiveTexture(GLenum texture);
+
+// Framebuffer functions
+void glGenFramebuffers(GLsizei n, GLuint *framebuffers);
+void glBindFramebuffer(GLenum target, GLuint framebuffer);
+void glDeleteFramebuffers(GLsizei n, const GLuint *framebuffers);
+void glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+void glFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+GLenum glCheckFramebufferStatus(GLenum target);
+
+// Renderbuffer functions
+void glGenRenderbuffers(GLsizei n, GLuint *renderbuffers);
+void glBindRenderbuffer(GLenum target, GLuint renderbuffer);
+void glDeleteRenderbuffers(GLsizei n, const GLuint *renderbuffers);
+void glRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
 
 void glDrawArrays(GLenum mode, GLint first, GLsizei count);
 void glDrawElements(GLenum mode, GLsizei count, GLenum type, const void *indices);

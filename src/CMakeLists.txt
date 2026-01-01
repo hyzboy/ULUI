@@ -13,6 +13,9 @@ set(SOURCES
     gl/VAO.cpp
     gl/UBO.cpp
     gl/SSBO.cpp
+    gl/Texture2D.cpp
+    gl/FBO.cpp
+    gl/RenderTarget.cpp
 )
 
 # Create executable or shared library based on platform
