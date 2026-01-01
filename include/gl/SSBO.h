@@ -60,10 +60,12 @@ public:
 
     /**
      * Map the SSBO buffer for reading/writing
-     * @param access Access mode (GL_READ_ONLY, GL_WRITE_ONLY, GL_READ_WRITE)
+     * @param offset Offset in bytes to start mapping
+     * @param length Length in bytes to map
+     * @param access Access mode flags (GL_MAP_READ_BIT, GL_MAP_WRITE_BIT, etc.)
      * @return Pointer to mapped memory or nullptr on failure
      */
-    void* MapBuffer(GLenum access = GL_READ_WRITE);
+    void* MapBufferRange(GLintptr offset, GLsizeiptr length, GLbitfield access);
 
     /**
      * Unmap the SSBO buffer

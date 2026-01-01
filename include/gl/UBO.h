@@ -60,9 +60,12 @@ public:
 
     /**
      * Map the UBO buffer for writing
+     * @param offset Offset in bytes to start mapping
+     * @param length Length in bytes to map
+     * @param access Access mode flags (GL_MAP_WRITE_BIT, etc.)
      * @return Pointer to mapped memory or nullptr on failure
      */
-    void* MapBuffer(GLenum access = GL_WRITE_ONLY);
+    void* MapBufferRange(GLintptr offset, GLsizeiptr length, GLbitfield access);
 
     /**
      * Unmap the UBO buffer

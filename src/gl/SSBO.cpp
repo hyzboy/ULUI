@@ -80,15 +80,20 @@ void SSBO::SetSubData(GLintptr offset, GLsizeiptr size, const void* data)
     LogD("SSBO subdata updated: %ld bytes at offset %ld", (long)size, (long)offset);
 }
 
-void* SSBO::MapBuffer(GLenum access)
+void* SSBO::MapBufferRange(GLintptr offset, GLsizeiptr length, GLbitfield access)
 {
     if (!m_ssbo) {
         LogE("SSBO not created");
         return nullptr;
     }
     
+    if (length <= 0) {
+        LogE("Invalid map length: %ld", (long)length);
+        return nullptr;
+    }
+    
     Bind();
-    void* ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, 0, access);
+    void* ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, length, access);
     if (!ptr) {
         LogE("Failed to map SSBO buffer");
     }

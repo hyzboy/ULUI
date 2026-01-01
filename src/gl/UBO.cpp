@@ -80,15 +80,20 @@ void UBO::SetSubData(GLintptr offset, GLsizeiptr size, const void* data)
     LogD("UBO subdata updated: %ld bytes at offset %ld", (long)size, (long)offset);
 }
 
-void* UBO::MapBuffer(GLenum access)
+void* UBO::MapBufferRange(GLintptr offset, GLsizeiptr length, GLbitfield access)
 {
     if (!m_ubo) {
         LogE("UBO not created");
         return nullptr;
     }
     
+    if (length <= 0) {
+        LogE("Invalid map length: %ld", (long)length);
+        return nullptr;
+    }
+    
     Bind();
-    void* ptr = glMapBufferRange(GL_UNIFORM_BUFFER, 0, 0, access);
+    void* ptr = glMapBufferRange(GL_UNIFORM_BUFFER, offset, length, access);
     if (!ptr) {
         LogE("Failed to map UBO buffer");
     }
