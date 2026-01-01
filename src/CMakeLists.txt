@@ -25,6 +25,7 @@ if(PLATFORM_ANDROID)
     list(APPEND SOURCES
         android/MediaCodecEncoder.cpp
         android/MediaCodecDecoder.cpp
+        android/Camera2Manager.cpp
     )
 endif()
 
@@ -58,6 +59,7 @@ if(PLATFORM_IOS OR PLATFORM_ANDROID)
             EGL
             GLESv3
             mediandk
+            camera2ndk
         )
     elseif(PLATFORM_IOS)
         target_link_libraries(ului_app PRIVATE 
