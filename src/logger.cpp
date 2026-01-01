@@ -1,4 +1,5 @@
 #include "logger.h"
+#include "file_system.h"
 #include <cstdio>
 #include <cstdarg>
 #include <cstring>
@@ -16,6 +17,7 @@
 #include <arpa/inet.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <errno.h>
 #endif
 
 #ifdef __ANDROID__
@@ -35,26 +37,128 @@ static LogLevel g_minLogLevel = LogLevel::VERBOSE;
 static std::string g_tagFilter;
 static bool g_initialized = false;
 
+// Helper function to create directory if it doesn't exist
+static bool CreateDirectoryIfNeeded(const std::string& path) {
+#ifdef _WIN32
+    // Windows: use CreateDirectoryA
+    DWORD attrs = GetFileAttributesA(path.c_str());
+    if (attrs == INVALID_FILE_ATTRIBUTES) {
+        // Directory doesn't exist, create it
+        return CreateDirectoryA(path.c_str(), NULL) != 0 || GetLastError() == ERROR_ALREADY_EXISTS;
+    }
+    return (attrs & FILE_ATTRIBUTE_DIRECTORY) != 0;
+#else
+    // Unix-like systems
+    struct stat st;
+    if (stat(path.c_str(), &st) == 0) {
+        return S_ISDIR(st.st_mode);
+    }
+    // Directory doesn't exist, create it
+    return mkdir(path.c_str(), 0755) == 0 || errno == EEXIST;
+#endif
+}
+
+// Helper function to get log directory path
+static std::string GetLogDirectory() {
+    std::string baseDir = ului::FileSystem::GetExternalStorageDirectory();
+    
+    // If GetExternalStorageDirectory returns empty (desktop platforms),
+    // fall back to other appropriate directories
+    if (baseDir.empty()) {
+#ifdef _WIN32
+        // Use local app data for Windows
+        baseDir = ului::FileSystem::GetLocalAppDataDirectory();
+        if (!baseDir.empty()) {
+            baseDir += "ULUI\\";
+            CreateDirectoryIfNeeded(baseDir);
+        }
+#elif defined(__APPLE__)
+        // Use app data directory for macOS/iOS
+        baseDir = ului::FileSystem::GetAppDataDirectory();
+        if (!baseDir.empty()) {
+            baseDir += "ULUI/";
+            CreateDirectoryIfNeeded(baseDir);
+        }
+#else
+        // Linux and other Unix-like systems
+        baseDir = ului::FileSystem::GetAppDataDirectory();
+        if (baseDir.empty()) {
+            baseDir = "./";
+        } else {
+            baseDir += "ului/";
+            CreateDirectoryIfNeeded(baseDir);
+        }
+#endif
+    }
+    
+    // Add Log subdirectory
+    std::string logDir = baseDir + "Log";
+#ifdef _WIN32
+    logDir += "\\";
+#else
+    logDir += "/";
+#endif
+    
+    return logDir;
+}
+
+// Helper function to get log file path
+static std::string GetLogFilePath() {
+    std::string logDir = GetLogDirectory();
+    
+    // Create the Log directory if it doesn't exist
+    CreateDirectoryIfNeeded(logDir);
+    
+    // Generate log filename with timestamp
+    auto now = std::chrono::system_clock::now();
+    auto time_t = std::chrono::system_clock::to_time_t(now);
+    char buffer[64];
+    std::strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M%S", std::localtime(&time_t));
+    
+    std::string logFile = logDir + "ului_" + buffer + ".log";
+    return logFile;
+}
+
 // Log implementation
 void Log::Initialize() {
     if (g_initialized) return;
     
     std::lock_guard<std::mutex> lock(g_outputsMutex);
     
-    // Add default console output
+    // Get log file path
+    std::string logFilePath = GetLogFilePath();
+    
+#ifdef _WIN32
+    // Windows: Add console output + file output
     auto consoleOutput = std::make_shared<ConsoleOutput>();
     g_outputs.push_back(consoleOutput);
     
-#ifdef __ANDROID__
-    // Add Android logcat output
+    auto fileOutput = std::make_shared<FileOutput>(logFilePath.c_str(), false);
+    g_outputs.push_back(fileOutput);
+    
+#elif defined(__ANDROID__)
+    // Android: Add logcat output + file output
     auto androidOutput = std::make_shared<AndroidOutput>();
     g_outputs.push_back(androidOutput);
-#endif
-
-#ifdef __APPLE__
-    // Add Apple unified logging
+    
+    auto fileOutput = std::make_shared<FileOutput>(logFilePath.c_str(), false);
+    g_outputs.push_back(fileOutput);
+    
+#elif defined(__APPLE__)
+    // Apple: Add unified logging + file output
     auto appleOutput = std::make_shared<AppleOutput>();
     g_outputs.push_back(appleOutput);
+    
+    auto fileOutput = std::make_shared<FileOutput>(logFilePath.c_str(), false);
+    g_outputs.push_back(fileOutput);
+    
+#else
+    // Other Unix-like systems: Add console output + file output
+    auto consoleOutput = std::make_shared<ConsoleOutput>();
+    g_outputs.push_back(consoleOutput);
+    
+    auto fileOutput = std::make_shared<FileOutput>(logFilePath.c_str(), false);
+    g_outputs.push_back(fileOutput);
 #endif
     
     g_initialized = true;
