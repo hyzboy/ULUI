@@ -6,19 +6,24 @@
 #include "gl/Texture2D.h"
 #include "gl/FBO.h"
 
+#ifdef __ANDROID__
+#include <EGL/egl.h>
+#endif
+
 namespace ului {
 namespace gl {
 
 /**
  * RenderTarget class for unified rendering interface
- * Supports rendering to both Texture2D and the default screen framebuffer
+ * Supports rendering to Texture2D, default screen framebuffer, and EGLSurface (Android)
  * Provides unified access to render target properties like size and orientation
  */
 class RenderTarget : public Object {
 public:
     enum class Type {
-        Screen,     // Render to default framebuffer (screen)
-        Texture     // Render to texture via FBO
+        Screen,      // Render to default framebuffer (screen)
+        Texture,     // Render to texture via FBO
+        EGLSurface   // Render to EGLSurface (Android MediaCodec)
     };
 
     /**
@@ -34,6 +39,17 @@ public:
      * @param createDepthBuffer Whether to create a depth buffer
      */
     RenderTarget(std::shared_ptr<Texture2D> texture, bool createDepthBuffer = true);
+
+#ifdef __ANDROID__
+    /**
+     * Create an EGLSurface render target (Android MediaCodec)
+     * @param eglDisplay EGL display
+     * @param eglSurface EGL surface (from AMediaCodec_createInputSurface)
+     * @param width Surface width
+     * @param height Surface height
+     */
+    RenderTarget(EGLDisplay eglDisplay, EGLSurface eglSurface, GLsizei width, GLsizei height);
+#endif
 
     ~RenderTarget() override;
 
@@ -81,6 +97,11 @@ public:
     bool IsTexture() const { return m_type == Type::Texture; }
 
     /**
+     * Check if this is an EGLSurface render target (Android)
+     */
+    bool IsEGLSurface() const { return m_type == Type::EGLSurface; }
+
+    /**
      * Get render target width
      */
     GLsizei GetWidth() const { return m_width; }
@@ -126,6 +147,20 @@ public:
      */
     void Destroy();
 
+#ifdef __ANDROID__
+    /**
+     * Swap buffers for EGLSurface render target
+     * Must be called after rendering to EGLSurface to present the frame
+     * @return true if successful, false otherwise
+     */
+    bool SwapBuffers();
+    
+    /**
+     * Get the EGLSurface (only for EGLSurface render targets)
+     */
+    EGLSurface GetEGLSurface() const { return m_eglSurface; }
+#endif
+
 private:
     Type m_type;
     GLsizei m_width;
@@ -136,6 +171,16 @@ private:
     std::shared_ptr<FBO> m_fbo;
     GLuint m_depthRenderbuffer;
     bool m_createDepthBuffer;
+
+#ifdef __ANDROID__
+    // For EGLSurface render targets (Android MediaCodec)
+    EGLDisplay m_eglDisplay;
+    EGLSurface m_eglSurface;
+    EGLContext m_eglContext;
+    EGLContext m_previousContext;
+    EGLSurface m_previousReadSurface;
+    EGLSurface m_previousDrawSurface;
+#endif
 
     bool InitializeTextureTarget();
 };
