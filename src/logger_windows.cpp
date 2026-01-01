@@ -80,7 +80,7 @@ ConsoleOutput::ConsoleOutput(bool colorized) : m_colorized(colorized) {
         HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
         DWORD dwMode = 0;
         GetConsoleMode(hOut, &dwMode);
-        dwMode |= 0x0004;  // ENABLE_VIRTUAL_TERMINAL_PROCESSING
+        dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
         SetConsoleMode(hOut, dwMode);
     }
 }
