@@ -1,6 +1,7 @@
 #include "triangle_app.h"
 #include "file_system.h"
 #include "logger.h"
+#include "path.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -83,10 +84,14 @@ bool TriangleApp::initialize(int width, int height)
     LogI("OpenGL Version: %s", glGetString(GL_VERSION));
     LogI("GLSL Version: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
     
-    // Load shaders
+    // Load shaders using Path class for cross-platform path handling
     LogD("Loading shader files");
-    std::string vertexShaderSource = readShaderFile("shaders/triangle.vert");
-    std::string fragmentShaderSource = readShaderFile("shaders/triangle.frag");
+    Path shadersPath("shaders");
+    Path vertShaderPath = shadersPath / "triangle.vert";
+    Path fragShaderPath = shadersPath / "triangle.frag";
+    
+    std::string vertexShaderSource = readShaderFile(vertShaderPath.c_str());
+    std::string fragmentShaderSource = readShaderFile(fragShaderPath.c_str());
     
     if (vertexShaderSource.empty() || fragmentShaderSource.empty()) {
         LogE("Failed to load shader files");

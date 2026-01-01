@@ -223,6 +223,10 @@ FileOutput::FileOutput(const char* filepath, bool append)
     OpenFile(append);
 }
 
+FileOutput::FileOutput(const ului::Path& filepath, bool append)
+    : FileOutput(filepath.c_str(), append) {
+}
+
 FileOutput::~FileOutput() {
     CloseFile();
 }

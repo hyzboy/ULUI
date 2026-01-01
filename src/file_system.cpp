@@ -1,4 +1,5 @@
 #include "file_system.h"
+#include "path.h"
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
@@ -708,6 +709,48 @@ std::string FileSystem::GetUserHomeDirectory() {
     }
     return "";
 #endif
+}
+
+// ===== Path Overloads =====
+
+void FileSystem::Initialize(const Path& assetPath) {
+    Initialize(assetPath.c_str());
+}
+
+std::string FileSystem::ReadAssetText(const Path& filename) {
+    return ReadAssetText(filename.c_str());
+}
+
+std::vector<uint8_t> FileSystem::ReadAssetBinary(const Path& filename) {
+    return ReadAssetBinary(filename.c_str());
+}
+
+bool FileSystem::AssetExists(const Path& filename) {
+    return AssetExists(filename.c_str());
+}
+
+std::string FileSystem::ReadExternalText(const Path& filepath) {
+    return ReadExternalText(filepath.c_str());
+}
+
+std::vector<uint8_t> FileSystem::ReadExternalBinary(const Path& filepath) {
+    return ReadExternalBinary(filepath.c_str());
+}
+
+bool FileSystem::WriteExternalText(const Path& filepath, const std::string& content) {
+    return WriteExternalText(filepath.c_str(), content);
+}
+
+bool FileSystem::WriteExternalBinary(const Path& filepath, const std::vector<uint8_t>& data) {
+    return WriteExternalBinary(filepath.c_str(), data);
+}
+
+bool FileSystem::ExternalFileExists(const Path& filepath) {
+    return ExternalFileExists(filepath.c_str());
+}
+
+bool FileSystem::DeleteExternalFile(const Path& filepath) {
+    return DeleteExternalFile(filepath.c_str());
 }
 
 #ifdef __ANDROID__
