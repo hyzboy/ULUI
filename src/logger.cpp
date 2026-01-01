@@ -69,14 +69,14 @@ static std::string GetLogDirectory() {
         // Use local app data for Windows
         baseDir = ului::FileSystem::GetLocalAppDataDirectory();
         if (!baseDir.empty()) {
-            baseDir += "ULUI\\";
+            baseDir += "ului\\";
             CreateDirectoryIfNeeded(baseDir);
         }
 #elif defined(__APPLE__)
         // Use app data directory for macOS/iOS
         baseDir = ului::FileSystem::GetAppDataDirectory();
         if (!baseDir.empty()) {
-            baseDir += "ULUI/";
+            baseDir += "ului/";
             CreateDirectoryIfNeeded(baseDir);
         }
 #else
@@ -125,41 +125,31 @@ void Log::Initialize() {
     
     std::lock_guard<std::mutex> lock(g_outputsMutex);
     
-    // Get log file path
-    std::string logFilePath = GetLogFilePath();
-    
 #ifdef _WIN32
-    // Windows: Add console output + file output
+    // Windows: Add console output
     auto consoleOutput = std::make_shared<ConsoleOutput>();
     g_outputs.push_back(consoleOutput);
     
-    auto fileOutput = std::make_shared<FileOutput>(logFilePath.c_str(), false);
-    g_outputs.push_back(fileOutput);
-    
 #elif defined(__ANDROID__)
-    // Android: Add logcat output + file output
+    // Android: Add logcat output
     auto androidOutput = std::make_shared<AndroidOutput>();
     g_outputs.push_back(androidOutput);
     
-    auto fileOutput = std::make_shared<FileOutput>(logFilePath.c_str(), false);
-    g_outputs.push_back(fileOutput);
-    
 #elif defined(__APPLE__)
-    // Apple: Add unified logging + file output
+    // Apple: Add unified logging
     auto appleOutput = std::make_shared<AppleOutput>();
     g_outputs.push_back(appleOutput);
     
-    auto fileOutput = std::make_shared<FileOutput>(logFilePath.c_str(), false);
-    g_outputs.push_back(fileOutput);
-    
 #else
-    // Other Unix-like systems: Add console output + file output
+    // Other Unix-like systems: Add console output
     auto consoleOutput = std::make_shared<ConsoleOutput>();
     g_outputs.push_back(consoleOutput);
+#endif
     
+    // Add file output for all platforms
+    std::string logFilePath = GetLogFilePath();
     auto fileOutput = std::make_shared<FileOutput>(logFilePath.c_str(), false);
     g_outputs.push_back(fileOutput);
-#endif
     
     g_initialized = true;
 }
