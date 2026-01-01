@@ -1,5 +1,6 @@
 #include "path.h"
 #include <algorithm>
+#include <cctype>
 
 namespace ului {
 
@@ -276,7 +277,10 @@ Path Path::Normalize() const {
         result.pop_back();
     }
     
-    return Path(result);
+    // Create path without calling NormalizeSeparators again
+    Path normalized;
+    normalized.m_path = result;
+    return normalized;
 }
 
 } // namespace ului
