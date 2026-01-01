@@ -64,6 +64,7 @@ void Texture2D::SetImage(GLsizei width, GLsizei height, GLint internalFormat,
     
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, data);
+    glBindTexture(GL_TEXTURE_2D, 0);
     
     LogD("Texture2D image set: %dx%d, format=%d", width, height, internalFormat);
 }
@@ -78,6 +79,7 @@ void Texture2D::SetSubImage(GLint xoffset, GLint yoffset, GLsizei width, GLsizei
     
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset, width, height, format, type, data);
+    glBindTexture(GL_TEXTURE_2D, 0);
     
     LogD("Texture2D subimage updated: %dx%d at (%d,%d)", width, height, xoffset, yoffset);
 }
@@ -92,6 +94,7 @@ void Texture2D::SetFilter(GLint minFilter, GLint magFilter)
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+    glBindTexture(GL_TEXTURE_2D, 0);
     
     LogD("Texture2D filter set: min=%d, mag=%d", minFilter, magFilter);
 }
@@ -106,6 +109,7 @@ void Texture2D::SetWrap(GLint wrapS, GLint wrapT)
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+    glBindTexture(GL_TEXTURE_2D, 0);
     
     LogD("Texture2D wrap set: S=%d, T=%d", wrapS, wrapT);
 }
@@ -119,6 +123,7 @@ void Texture2D::GenerateMipmap()
     
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
     
     LogD("Texture2D mipmap generated");
 }

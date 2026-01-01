@@ -55,6 +55,7 @@ void FBO::AttachTexture2D(GLuint texture, GLenum attachment)
     
     Bind();
     glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture, 0);
+    Unbind();
     LogD("Texture %u attached to FBO at attachment 0x%x", texture, attachment);
 }
 
@@ -67,6 +68,7 @@ void FBO::AttachDepthRenderbuffer(GLuint renderbuffer)
     
     Bind();
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderbuffer);
+    Unbind();
     LogD("Depth renderbuffer %u attached to FBO", renderbuffer);
 }
 
@@ -79,6 +81,7 @@ void FBO::AttachStencilRenderbuffer(GLuint renderbuffer)
     
     Bind();
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderbuffer);
+    Unbind();
     LogD("Stencil renderbuffer %u attached to FBO", renderbuffer);
 }
 
@@ -91,6 +94,7 @@ void FBO::AttachDepthStencilRenderbuffer(GLuint renderbuffer)
     
     Bind();
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderbuffer);
+    Unbind();
     LogD("Depth-stencil renderbuffer %u attached to FBO", renderbuffer);
 }
 
@@ -103,6 +107,7 @@ bool FBO::IsComplete() const
     
     Bind();
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    Unbind();
     return status == GL_FRAMEBUFFER_COMPLETE;
 }
 
@@ -114,7 +119,9 @@ GLenum FBO::GetStatus() const
     }
     
     Bind();
-    return glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    Unbind();
+    return status;
 }
 
 void FBO::Destroy()
