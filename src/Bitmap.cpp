@@ -274,7 +274,9 @@ void Bitmap::AllocateInternalMemory()
             switch (m_format.pixelFormat) {
                 case PixelFormat::YUV420P: {
                     int ySize = m_format.width * m_format.height;
-                    int uvSize = (m_format.width / 2) * (m_format.height / 2);
+                    int uvWidth = (m_format.width + 1) / 2;
+                    int uvHeight = (m_format.height + 1) / 2;
+                    int uvSize = uvWidth * uvHeight;
                     m_planes[0] = ptr;
                     m_planes[1] = ptr + ySize;
                     m_planes[2] = ptr + ySize + uvSize;
@@ -283,7 +285,8 @@ void Bitmap::AllocateInternalMemory()
                 }
                 case PixelFormat::YUV422P: {
                     int ySize = m_format.width * m_format.height;
-                    int uvSize = (m_format.width / 2) * m_format.height;
+                    int uvWidth = (m_format.width + 1) / 2;
+                    int uvSize = uvWidth * m_format.height;
                     m_planes[0] = ptr;
                     m_planes[1] = ptr + ySize;
                     m_planes[2] = ptr + ySize + uvSize;

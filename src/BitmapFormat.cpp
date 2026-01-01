@@ -74,11 +74,13 @@ size_t BitmapFormat::GetDataSize() const
         case PixelFormat::NV12:
         case PixelFormat::NV21:
             // Y plane + UV planes (1/4 size each for 4:2:0)
-            return width * height + (width / 2) * (height / 2) * 2;
+            // Handle odd dimensions correctly
+            return width * height + ((width + 1) / 2) * ((height + 1) / 2) * 2;
             
         case PixelFormat::YUV422P:
             // Y plane + U plane (half width) + V plane (half width)
-            return width * height + (width / 2) * height * 2;
+            // Handle odd width correctly
+            return width * height + ((width + 1) / 2) * height * 2;
             
         case PixelFormat::YUV444P:
             // Y + U + V planes (all same size)
