@@ -1,11 +1,6 @@
 #include "gl/ShaderProgram.h"
 #include <vector>
 
-// Define GL_INVALID_INDEX if not defined
-#ifndef GL_INVALID_INDEX
-#define GL_INVALID_INDEX 0xFFFFFFFFu
-#endif
-
 namespace ului {
 namespace gl {
 
