@@ -193,7 +193,6 @@ void RenderTarget::Bind() const
 #ifdef __ANDROID__
     else if (m_type == Type::EGLSurface) {
         // Save current EGL state
-        EGLDisplay currentDisplay = eglGetCurrentDisplay();
         m_previousContext = eglGetCurrentContext();
         m_previousReadSurface = eglGetCurrentSurface(EGL_READ);
         m_previousDrawSurface = eglGetCurrentSurface(EGL_DRAW);
@@ -220,9 +219,13 @@ void RenderTarget::Unbind() const
 {
 #ifdef __ANDROID__
     if (m_type == Type::EGLSurface) {
-        // Restore previous EGL context
-        if (m_previousContext != EGL_NO_CONTEXT) {
-            if (!eglMakeCurrent(m_eglDisplay, m_previousDrawSurface, m_previousReadSurface, m_previousContext)) {
+        // Restore previous EGL context if it was valid
+        // If no previous context, unbind current context
+        if (m_previousContext != EGL_NO_CONTEXT || 
+            m_previousDrawSurface != EGL_NO_SURFACE || 
+            m_previousReadSurface != EGL_NO_SURFACE) {
+            if (!eglMakeCurrent(m_eglDisplay, m_previousDrawSurface, 
+                               m_previousReadSurface, m_previousContext)) {
                 EGLint error = eglGetError();
                 LogE("Failed to restore previous EGL context: 0x%x", error);
             }
