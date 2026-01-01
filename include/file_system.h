@@ -245,6 +245,15 @@ public:
      * Typically called from android_main with state->activity->assetManager
      */
     static void SetAndroidAssetManager(void* assetManager);
+    
+    /**
+     * @brief Set Android package name for path composition
+     * @param packageName The Android application package name (e.g., "com.example.myapp")
+     * 
+     * This should be called on Android to set the package name used for composing
+     * app-specific directories. If not set, a default package name will be used.
+     */
+    static void SetAndroidPackageName(const char* packageName);
 #endif
 
 private:
@@ -253,6 +262,7 @@ private:
     
 #ifdef __ANDROID__
     static void* s_assetManager;  // AAssetManager*
+    static std::string s_packageName;  // Android package name
 #endif
 };
 
