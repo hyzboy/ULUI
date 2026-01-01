@@ -718,10 +718,16 @@ void FileSystem::SetAndroidAssetManager(void* assetManager) {
 
 void FileSystem::SetAndroidPackageName(const char* packageName) {
     if (packageName && packageName[0] != '\0') {
-        s_packageName = packageName;
-        std::cout << "Android package name set to: " << s_packageName << std::endl;
+        std::string pkgName(packageName);
+        // Basic validation: package name should contain at least one dot
+        if (pkgName.find('.') != std::string::npos) {
+            s_packageName = pkgName;
+            std::cout << "Android package name set to: " << s_packageName << std::endl;
+        } else {
+            std::cerr << "Warning: Invalid package name format (should be like com.example.app), keeping default" << std::endl;
+        }
     } else {
-        std::cerr << "Warning: Invalid package name provided, keeping default" << std::endl;
+        std::cerr << "Warning: Empty or null package name provided, keeping default" << std::endl;
     }
 }
 #endif
