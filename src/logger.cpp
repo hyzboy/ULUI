@@ -49,7 +49,10 @@ static bool CreateDirectoryIfNeeded(const std::string& path) {
     DWORD attrs = GetFileAttributesA(path.c_str());
     if (attrs == INVALID_FILE_ATTRIBUTES) {
         // Directory doesn't exist, create it
-        return CreateDirectoryA(path.c_str(), NULL) != 0 || GetLastError() == ERROR_ALREADY_EXISTS;
+        if (CreateDirectoryA(path.c_str(), NULL) != 0) {
+            return true;
+        }
+        return GetLastError() == ERROR_ALREADY_EXISTS;
     }
     return (attrs & FILE_ATTRIBUTE_DIRECTORY) != 0;
 #else
@@ -67,8 +70,8 @@ static bool CreateDirectoryIfNeeded(const std::string& path) {
 static std::string GetLogDirectory() {
     std::string baseDir = ului::FileSystem::GetExternalStorageDirectory();
     
-    // If GetExternalStorageDirectory returns empty (desktop platforms),
-    // fall back to other appropriate directories
+    // If GetExternalStorageDirectory returns empty (typically on desktop platforms
+    // or when external storage is unavailable), fall back to other appropriate directories
     if (baseDir.empty()) {
 #ifdef _WIN32
         // Use local app data for Windows
@@ -163,6 +166,8 @@ void Log::Initialize() {
 #endif
     
     // Add file output for all platforms
+    // Note: append parameter is set to false, so log files are created fresh on each initialization
+    // This prevents log files from growing indefinitely across application sessions
     std::string logFilePath = GetLogFilePath();
     auto fileOutput = std::make_shared<FileOutput>(logFilePath.c_str(), false);
     g_outputs.push_back(fileOutput);
