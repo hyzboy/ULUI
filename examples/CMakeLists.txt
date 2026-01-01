@@ -21,3 +21,15 @@ target_compile_definitions(log_example PRIVATE
     $<$<CONFIG:Debug>:_DEBUG>
     $<$<CONFIG:Release>:NDEBUG>
 )
+
+# Comprehensive test
+add_executable(comprehensive_log_test
+    comprehensive_log_test.cpp
+    ../src/log/ObjectLogger.cpp
+)
+
+# Compile definitions
+target_compile_definitions(comprehensive_log_test PRIVATE
+    $<$<CONFIG:Debug>:_DEBUG>
+    $<$<CONFIG:Release>:NDEBUG>
+)
