@@ -1,4 +1,5 @@
 #include "logger.h"
+#include "file_system.h"
 #include <cstdio>
 #include <cstdarg>
 #include <cstring>
@@ -16,6 +17,7 @@
 #include <arpa/inet.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <errno.h>
 #endif
 
 #ifdef __ANDROID__
@@ -28,6 +30,11 @@
 
 namespace Logger {
 
+// Constants for log file configuration
+static const char* LOG_DIR_NAME = "Log";
+static const char* LOG_FILE_PREFIX = "ului_";
+static const char* LOG_FILE_EXTENSION = ".log";
+
 // Static members
 static std::vector<std::shared_ptr<LogOutput>> g_outputs;
 static std::mutex g_outputsMutex;
@@ -35,27 +42,135 @@ static LogLevel g_minLogLevel = LogLevel::VERBOSE;
 static std::string g_tagFilter;
 static bool g_initialized = false;
 
+// Helper function to create directory if it doesn't exist
+static bool CreateDirectoryIfNeeded(const std::string& path) {
+#ifdef _WIN32
+    // Windows: use CreateDirectoryA
+    DWORD attrs = GetFileAttributesA(path.c_str());
+    if (attrs == INVALID_FILE_ATTRIBUTES) {
+        // Directory doesn't exist, create it
+        if (CreateDirectoryA(path.c_str(), NULL) != 0) {
+            return true;
+        }
+        return GetLastError() == ERROR_ALREADY_EXISTS;
+    }
+    return (attrs & FILE_ATTRIBUTE_DIRECTORY) != 0;
+#else
+    // Unix-like systems
+    struct stat st;
+    if (stat(path.c_str(), &st) == 0) {
+        return S_ISDIR(st.st_mode);
+    }
+    // Directory doesn't exist, create it
+    return mkdir(path.c_str(), 0755) == 0 || errno == EEXIST;
+#endif
+}
+
+// Helper function to get log directory path
+static std::string GetLogDirectory() {
+    std::string baseDir = ului::FileSystem::GetExternalStorageDirectory();
+    
+    // If GetExternalStorageDirectory returns empty (typically on desktop platforms
+    // or when external storage is unavailable), fall back to other appropriate directories
+    if (baseDir.empty()) {
+#ifdef _WIN32
+        // Use local app data for Windows
+        baseDir = ului::FileSystem::GetLocalAppDataDirectory();
+        if (!baseDir.empty()) {
+            baseDir += "ului\\";
+            CreateDirectoryIfNeeded(baseDir);
+        }
+#elif defined(__APPLE__)
+        // Use app data directory for macOS/iOS
+        baseDir = ului::FileSystem::GetAppDataDirectory();
+        if (!baseDir.empty()) {
+            baseDir += "ului/";
+            CreateDirectoryIfNeeded(baseDir);
+        }
+#else
+        // Linux and other Unix-like systems
+        baseDir = ului::FileSystem::GetAppDataDirectory();
+        if (baseDir.empty()) {
+            baseDir = "./";
+        } else {
+            baseDir += "ului/";
+            CreateDirectoryIfNeeded(baseDir);
+        }
+#endif
+    }
+    
+    // Add Log subdirectory
+    std::string logDir = baseDir + LOG_DIR_NAME;
+#ifdef _WIN32
+    logDir += "\\";
+#else
+    logDir += "/";
+#endif
+    
+    return logDir;
+}
+
+// Helper function to get log file path
+static std::string GetLogFilePath() {
+    std::string logDir = GetLogDirectory();
+    
+    // Create the Log directory if it doesn't exist
+    CreateDirectoryIfNeeded(logDir);
+    
+    // Generate log filename with timestamp
+    auto now = std::chrono::system_clock::now();
+    auto time_t = std::chrono::system_clock::to_time_t(now);
+    
+    char buffer[64];
+#ifdef _WIN32
+    // Windows: use localtime_s
+    struct tm timeinfo;
+    localtime_s(&timeinfo, &time_t);
+    std::strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M%S", &timeinfo);
+#else
+    // Unix: use localtime_r
+    struct tm timeinfo;
+    localtime_r(&time_t, &timeinfo);
+    std::strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M%S", &timeinfo);
+#endif
+    
+    std::string logFile = logDir + LOG_FILE_PREFIX + buffer + LOG_FILE_EXTENSION;
+    return logFile;
+}
+
 // Log implementation
 void Log::Initialize() {
     if (g_initialized) return;
     
     std::lock_guard<std::mutex> lock(g_outputsMutex);
     
-    // Add default console output
+#ifdef _WIN32
+    // Windows: Add console output
     auto consoleOutput = std::make_shared<ConsoleOutput>();
     g_outputs.push_back(consoleOutput);
     
-#ifdef __ANDROID__
-    // Add Android logcat output
+#elif defined(__ANDROID__)
+    // Android: Add logcat output
     auto androidOutput = std::make_shared<AndroidOutput>();
     g_outputs.push_back(androidOutput);
-#endif
-
-#ifdef __APPLE__
-    // Add Apple unified logging
+    
+#elif defined(__APPLE__)
+    // Apple: Add unified logging
     auto appleOutput = std::make_shared<AppleOutput>();
     g_outputs.push_back(appleOutput);
+    
+#else
+    // Other Unix-like systems: Add console output
+    auto consoleOutput = std::make_shared<ConsoleOutput>();
+    g_outputs.push_back(consoleOutput);
 #endif
+    
+    // Add file output for all platforms
+    // Note: append parameter is set to false, so log files are created fresh on each initialization
+    // This prevents log files from growing indefinitely across application sessions
+    std::string logFilePath = GetLogFilePath();
+    auto fileOutput = std::make_shared<FileOutput>(logFilePath.c_str(), false);
+    g_outputs.push_back(fileOutput);
     
     g_initialized = true;
 }
