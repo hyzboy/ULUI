@@ -9,8 +9,27 @@ set(SOURCES
     logger_common.cpp
     object.cpp
     log/ObjectLogger.cpp
+    gl/ShaderProgram.cpp
+    gl/VBO.cpp
+    gl/VAO.cpp
+    gl/UBO.cpp
+    gl/SSBO.cpp
+    gl/Texture2D.cpp
+    gl/FBO.cpp
+    gl/RenderTarget.cpp
+    Bitmap.cpp
+    BitmapFormat.cpp
 )
 
+# Add Android MediaCodec sources if building for Android
+if(PLATFORM_ANDROID)
+    list(APPEND SOURCES
+        android/MediaCodecEncoder.cpp
+        android/MediaCodecDecoder.cpp
+        android/Camera2Manager.cpp
+    )
+endif()
+    
 # Platform-specific logger implementation
 if(WIN32)
     list(APPEND SOURCES logger_windows.cpp)
@@ -52,6 +71,8 @@ if(PLATFORM_IOS OR PLATFORM_ANDROID)
             log
             EGL
             GLESv3
+            mediandk
+            camera2ndk
         )
     elseif(PLATFORM_IOS)
         target_link_libraries(ului_app PRIVATE 
