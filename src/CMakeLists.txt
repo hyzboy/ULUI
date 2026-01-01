@@ -16,6 +16,8 @@ set(SOURCES
     gl/Texture2D.cpp
     gl/FBO.cpp
     gl/RenderTarget.cpp
+    Bitmap.cpp
+    BitmapFormat.cpp
 )
 
 # Create executable or shared library based on platform
