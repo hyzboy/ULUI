@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include "path.h"
 
 namespace ului {
 
@@ -28,6 +29,12 @@ public:
     static void Initialize(const char* assetPath = nullptr);
     
     /**
+     * @brief Initialize the file system with Path object
+     * @param assetPath Path to internal assets directory
+     */
+    static void Initialize(const Path& assetPath);
+    
+    /**
      * @brief Shutdown and cleanup file system resources
      */
     static void Shutdown();
@@ -47,6 +54,13 @@ public:
     static std::string ReadAssetText(const char* filename);
     
     /**
+     * @brief Read entire internal asset file to string with Path object
+     * @param filename Path relative to asset directory
+     * @return File contents as string, empty if failed
+     */
+    static std::string ReadAssetText(const Path& filename);
+    
+    /**
      * @brief Read entire internal asset file to binary buffer
      * @param filename Path relative to asset directory
      * @return File contents as byte vector, empty if failed
@@ -54,11 +68,25 @@ public:
     static std::vector<uint8_t> ReadAssetBinary(const char* filename);
     
     /**
+     * @brief Read entire internal asset file to binary buffer with Path object
+     * @param filename Path relative to asset directory
+     * @return File contents as byte vector, empty if failed
+     */
+    static std::vector<uint8_t> ReadAssetBinary(const Path& filename);
+    
+    /**
      * @brief Check if internal asset exists
      * @param filename Path relative to asset directory
      * @return true if asset exists, false otherwise
      */
     static bool AssetExists(const char* filename);
+    
+    /**
+     * @brief Check if internal asset exists with Path object
+     * @param filename Path relative to asset directory
+     * @return true if asset exists, false otherwise
+     */
+    static bool AssetExists(const Path& filename);
     
     // ===== External Files (Read-Write) =====
     
@@ -72,11 +100,25 @@ public:
     static std::string ReadExternalText(const char* filepath);
     
     /**
+     * @brief Read entire external file to string with Path object
+     * @param filepath Absolute or relative path to file
+     * @return File contents as string, empty if failed
+     */
+    static std::string ReadExternalText(const Path& filepath);
+    
+    /**
      * @brief Read entire external file to binary buffer
      * @param filepath Absolute or relative path to file
      * @return File contents as byte vector, empty if failed
      */
     static std::vector<uint8_t> ReadExternalBinary(const char* filepath);
+    
+    /**
+     * @brief Read entire external file to binary buffer with Path object
+     * @param filepath Absolute or relative path to file
+     * @return File contents as byte vector, empty if failed
+     */
+    static std::vector<uint8_t> ReadExternalBinary(const Path& filepath);
     
     /**
      * @brief Write text to external file
@@ -87,12 +129,28 @@ public:
     static bool WriteExternalText(const char* filepath, const std::string& content);
     
     /**
+     * @brief Write text to external file with Path object
+     * @param filepath Absolute or relative path to file
+     * @param content Text content to write
+     * @return true if successful, false otherwise
+     */
+    static bool WriteExternalText(const Path& filepath, const std::string& content);
+    
+    /**
      * @brief Write binary data to external file
      * @param filepath Absolute or relative path to file
      * @param data Binary data to write
      * @return true if successful, false otherwise
      */
     static bool WriteExternalBinary(const char* filepath, const std::vector<uint8_t>& data);
+    
+    /**
+     * @brief Write binary data to external file with Path object
+     * @param filepath Absolute or relative path to file
+     * @param data Binary data to write
+     * @return true if successful, false otherwise
+     */
+    static bool WriteExternalBinary(const Path& filepath, const std::vector<uint8_t>& data);
     
     /**
      * @brief Check if external file exists
@@ -102,11 +160,25 @@ public:
     static bool ExternalFileExists(const char* filepath);
     
     /**
+     * @brief Check if external file exists with Path object
+     * @param filepath Absolute or relative path to file
+     * @return true if file exists, false otherwise
+     */
+    static bool ExternalFileExists(const Path& filepath);
+    
+    /**
      * @brief Delete external file
      * @param filepath Absolute or relative path to file
      * @return true if successful, false otherwise
      */
     static bool DeleteExternalFile(const char* filepath);
+    
+    /**
+     * @brief Delete external file with Path object
+     * @param filepath Absolute or relative path to file
+     * @return true if successful, false otherwise
+     */
+    static bool DeleteExternalFile(const Path& filepath);
     
     // ===== Utility Functions =====
     

@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
 
-# Source files
+# Common source files
 set(SOURCES
     main.cpp
     triangle_app.cpp
     file_system.cpp
-    logger.cpp
+    path.cpp
+    logger_common.cpp
     object.cpp
     log/ObjectLogger.cpp
     gl/ShaderProgram.cpp
@@ -27,6 +28,18 @@ if(PLATFORM_ANDROID)
         android/MediaCodecDecoder.cpp
         android/Camera2Manager.cpp
     )
+endif()
+    
+# Platform-specific logger implementation
+if(WIN32)
+    list(APPEND SOURCES logger_windows.cpp)
+elseif(ANDROID)
+    list(APPEND SOURCES logger_android.cpp)
+elseif(APPLE)
+    list(APPEND SOURCES logger_apple.cpp)
+else()
+    # Linux and other Unix-like systems
+    list(APPEND SOURCES logger_unix.cpp)
 endif()
 
 # Create executable or shared library based on platform

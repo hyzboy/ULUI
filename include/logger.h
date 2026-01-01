@@ -5,6 +5,7 @@
 #include <memory>
 #include <mutex>
 #include <cstdint>
+#include "path.h"
 
 // Undefine common macros that might conflict with our enum values
 #ifdef DEBUG
@@ -110,6 +111,10 @@ class FileOutput : public LogOutput {
 public:
     // Constructor with file path
     explicit FileOutput(const char* filepath, bool append = false);
+    
+    // Constructor with Path object
+    explicit FileOutput(const ului::Path& filepath, bool append = false);
+    
     ~FileOutput() override;
     
     void Write(LogLevel level, const char* tag, const char* message) override;

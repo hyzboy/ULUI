@@ -1,6 +1,7 @@
 #include "triangle_app.h"
 #include "file_system.h"
 #include "logger.h"
+#include "path.h"
 #include <iostream>
 #include <cstdlib>
 
@@ -49,9 +50,10 @@ int main()
     Logger::Log::Initialize();
     LOG_I("Main", "ULUI - OpenGL ES 3.0 Triangle Example with ANGLE");
     
-    // Initialize FileSystem with default asset path
-    FileSystem::Initialize("assets/");
-    LOG_D("Main", "FileSystem initialized with asset path: assets/");
+    // Initialize FileSystem with default asset path using Path class
+    Path assetPath("assets/");
+    FileSystem::Initialize(assetPath);
+    LOG_D("Main", "FileSystem initialized with asset path: %s", assetPath.c_str());
     
     // Initialize GLFW
     glfwSetErrorCallback(errorCallback);
