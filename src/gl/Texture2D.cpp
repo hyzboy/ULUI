@@ -94,9 +94,10 @@ void Texture2D::SetImage(GLsizei width, GLsizei height, GLint internalFormat,
     m_height = height;
     m_internalFormat = internalFormat;
     
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, data);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    GLenum target = GetTarget();
+    glBindTexture(target, m_texture);
+    glTexImage2D(target, 0, internalFormat, width, height, 0, format, type, data);
+    glBindTexture(target, 0);
     
     LogD("Texture2D image set: %dx%d, format=%d", width, height, internalFormat);
 }
@@ -114,9 +115,10 @@ void Texture2D::SetSubImage(GLint xoffset, GLint yoffset, GLsizei width, GLsizei
         return;
     }
     
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset, width, height, format, type, data);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    GLenum target = GetTarget();
+    glBindTexture(target, m_texture);
+    glTexSubImage2D(target, 0, xoffset, yoffset, width, height, format, type, data);
+    glBindTexture(target, 0);
     
     LogD("Texture2D subimage updated: %dx%d at (%d,%d)", width, height, xoffset, yoffset);
 }
