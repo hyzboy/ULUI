@@ -1,6 +1,7 @@
 #include "triangle_app.h"
 #include "file_system.h"
 #include "logger.h"
+#include "path.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -85,8 +86,9 @@ bool TriangleApp::initialize(int width, int height)
     
     // Load shaders
     LogD("Loading shader files");
-    std::string vertexShaderSource = readShaderFile("shaders/triangle.vert");
-    std::string fragmentShaderSource = readShaderFile("shaders/triangle.frag");
+    Path shaderDir("shaders");
+    std::string vertexShaderSource = readShaderFile((shaderDir / "triangle.vert").c_str());
+    std::string fragmentShaderSource = readShaderFile((shaderDir / "triangle.frag").c_str());
     
     if (vertexShaderSource.empty() || fragmentShaderSource.empty()) {
         LogE("Failed to load shader files");
