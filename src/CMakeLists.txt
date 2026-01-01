@@ -20,6 +20,14 @@ set(SOURCES
     BitmapFormat.cpp
 )
 
+# Add Android MediaCodec sources if building for Android
+if(PLATFORM_ANDROID)
+    list(APPEND SOURCES
+        android/MediaCodecEncoder.cpp
+        android/MediaCodecDecoder.cpp
+    )
+endif()
+
 # Create executable or shared library based on platform
 if(PLATFORM_ANDROID)
     # For Android, always create a shared library
@@ -49,6 +57,7 @@ if(PLATFORM_IOS OR PLATFORM_ANDROID)
             log
             EGL
             GLESv3
+            mediandk
         )
     elseif(PLATFORM_IOS)
         target_link_libraries(ului_app PRIVATE 
