@@ -278,6 +278,7 @@ Path Path::Normalize() const {
     }
     
     // Create path without calling NormalizeSeparators again
+    // This is safe because 'result' is already normalized by the loop above
     Path normalized;
     normalized.m_path = result;
     return normalized;
