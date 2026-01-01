@@ -30,6 +30,11 @@
 
 namespace Logger {
 
+// Constants for log file configuration
+static const char* LOG_DIR_NAME = "Log";
+static const char* LOG_FILE_PREFIX = "ului_";
+static const char* LOG_FILE_EXTENSION = ".log";
+
 // Static members
 static std::vector<std::shared_ptr<LogOutput>> g_outputs;
 static std::mutex g_outputsMutex;
@@ -92,7 +97,7 @@ static std::string GetLogDirectory() {
     }
     
     // Add Log subdirectory
-    std::string logDir = baseDir + "Log";
+    std::string logDir = baseDir + LOG_DIR_NAME;
 #ifdef _WIN32
     logDir += "\\";
 #else
@@ -112,10 +117,21 @@ static std::string GetLogFilePath() {
     // Generate log filename with timestamp
     auto now = std::chrono::system_clock::now();
     auto time_t = std::chrono::system_clock::to_time_t(now);
-    char buffer[64];
-    std::strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M%S", std::localtime(&time_t));
     
-    std::string logFile = logDir + "ului_" + buffer + ".log";
+    char buffer[64];
+#ifdef _WIN32
+    // Windows: use localtime_s
+    struct tm timeinfo;
+    localtime_s(&timeinfo, &time_t);
+    std::strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M%S", &timeinfo);
+#else
+    // Unix: use localtime_r
+    struct tm timeinfo;
+    localtime_r(&time_t, &timeinfo);
+    std::strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M%S", &timeinfo);
+#endif
+    
+    std::string logFile = logDir + LOG_FILE_PREFIX + buffer + LOG_FILE_EXTENSION;
     return logFile;
 }
 
