@@ -238,10 +238,9 @@ void android_main(android_app* state)
     state->userData = &androidApp;
     state->onAppCmd = handleCmd;
     
-    // Initialize FileSystem with Android asset manager
-    FileSystem::Initialize(nullptr);
+    // Initialize FileSystem for Android with asset manager and package name
 #ifdef __ANDROID__
-    FileSystem::SetAndroidAssetManager(state->activity->assetManager);
+    FileSystem::InitializeAndroid(state->activity->assetManager, "com.example.ului");
 #endif
     
     while (true) {

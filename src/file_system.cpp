@@ -33,6 +33,7 @@ bool FileSystem::s_initialized = false;
 
 #ifdef __ANDROID__
 void* FileSystem::s_assetManager = nullptr;
+std::string FileSystem::s_packageName = "com.example.ului";  // Default package name
 #endif
 
 void FileSystem::Initialize(const char* assetPath) {
@@ -327,7 +328,8 @@ std::string FileSystem::GetTempDirectory() {
 std::string FileSystem::GetAppDataDirectory() {
 #ifdef __ANDROID__
     // Android internal files directory
-    return "/data/data/com.example.ului/files/";
+    // Compose path using the current package name
+    return "/data/data/" + s_packageName + "/files/";
     
 #elif TARGET_OS_IOS
     @autoreleasepool {
@@ -469,7 +471,8 @@ std::string FileSystem::GetPublicDocumentsDirectory() {
 std::string FileSystem::GetExternalStorageDirectory() {
 #ifdef __ANDROID__
     // Android external storage app directory
-    return "/sdcard/Android/data/com.example.ului/files/";
+    // Compose path using the current package name
+    return "/sdcard/Android/data/" + s_packageName + "/files/";
     
 #elif TARGET_OS_IOS
     // Not applicable on iOS
@@ -708,9 +711,35 @@ std::string FileSystem::GetUserHomeDirectory() {
 }
 
 #ifdef __ANDROID__
+void FileSystem::InitializeAndroid(void* assetManager, const char* packageName) {
+    // Initialize the base FileSystem
+    Initialize(nullptr);
+    
+    // Set Android-specific components
+    SetAndroidAssetManager(assetManager);
+    SetAndroidPackageName(packageName);
+    
+    std::cout << "FileSystem initialized for Android" << std::endl;
+}
+
 void FileSystem::SetAndroidAssetManager(void* assetManager) {
     s_assetManager = assetManager;
     std::cout << "Android AAssetManager set" << std::endl;
+}
+
+void FileSystem::SetAndroidPackageName(const char* packageName) {
+    if (packageName && packageName[0] != '\0') {
+        std::string pkgName(packageName);
+        // Basic validation: package name should contain at least one dot
+        if (pkgName.find('.') != std::string::npos) {
+            s_packageName = pkgName;
+            std::cout << "Android package name set to: " << s_packageName << std::endl;
+        } else {
+            std::cerr << "Warning: Invalid package name format (should be like com.example.app), keeping default" << std::endl;
+        }
+    } else {
+        std::cerr << "Warning: Empty or null package name provided, keeping default" << std::endl;
+    }
 }
 #endif
 
