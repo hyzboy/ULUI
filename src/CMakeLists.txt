@@ -29,6 +29,13 @@ if(PLATFORM_ANDROID)
         android/Camera2Manager.cpp
     )
 endif()
+
+# Add Windows Media Foundation sources if building for Windows
+if(WIN32)
+    list(APPEND SOURCES
+        windows/MediaFoundationDecoder.cpp
+    )
+endif()
     
 # Platform-specific logger implementation
 if(WIN32)
@@ -91,7 +98,7 @@ else()
     
     # Platform-specific libraries
     if(WIN32)
-        target_link_libraries(ului_app PRIVATE gdi32 user32 shell32 ws2_32)
+        target_link_libraries(ului_app PRIVATE gdi32 user32 shell32 ws2_32 mfplat mfuuid mfreadwrite wmcodecdspuuid)
     elseif(APPLE)
         target_link_libraries(ului_app PRIVATE 
             "-framework Cocoa"
