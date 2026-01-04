@@ -433,35 +433,17 @@ bool MediaFoundationDecoder::HasDecodedFrame() {
         return false;
     }
 
-    // Check if output is available by querying stream info
-    MFT_OUTPUT_STREAM_INFO streamInfo;
-    HRESULT hr = m_context->transform->GetOutputStreamInfo(0, &streamInfo);
+    // Check if output is available using GetOutputStatus
+    // This is a non-destructive query that won't consume frames
+    DWORD flags = 0;
+    HRESULT hr = m_context->transform->GetOutputStatus(&flags);
+    
     if (FAILED(hr)) {
         return false;
     }
-
-    // Try to get output status without actually retrieving the frame
-    // Note: This is a lightweight check, the actual frame retrieval
-    // happens in GetDecodedBitmap()
-    MFT_OUTPUT_DATA_BUFFER outputBuffer;
-    outputBuffer.dwStreamID = 0;
-    outputBuffer.pSample = nullptr;
-    outputBuffer.dwStatus = 0;
-    outputBuffer.pEvents = nullptr;
-
-    DWORD status = 0;
-    hr = m_context->transform->ProcessOutput(
-        MFT_PROCESS_OUTPUT_STATUS_NEW_STREAMS, 1, &outputBuffer, &status);
-
-    if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT) {
-        return false;
-    }
-
-    if (outputBuffer.pSample) {
-        outputBuffer.pSample->Release();
-    }
-
-    return SUCCEEDED(hr);
+    
+    // MFT_OUTPUT_STATUS_SAMPLE_READY means a sample is available
+    return (flags & MFT_OUTPUT_STATUS_SAMPLE_READY) != 0;
 }
 
 bool MediaFoundationDecoder::ConvertSampleToBitmap(void* samplePtr, std::shared_ptr<Bitmap> bitmap) {
@@ -506,11 +488,23 @@ bool MediaFoundationDecoder::ConvertSampleToBitmap(void* samplePtr, std::shared_
         }
     }
 
-    // Copy data to bitmap
+    // Copy data to bitmap with size validation
     size_t dataSize = currentLength;
     void* bitmapData = bitmap->GetData();
+    
     if (bitmapData && dataSize > 0) {
-        memcpy(bitmapData, data, dataSize);
+        // Get expected bitmap size
+        size_t expectedSize = format.GetDataSize();
+        
+        // Ensure we don't overflow the bitmap buffer
+        size_t copySize = (dataSize < expectedSize) ? dataSize : expectedSize;
+        
+        if (copySize < dataSize) {
+            LogWarning("Decoder output size (%zu) exceeds bitmap size (%zu), truncating", 
+                      dataSize, expectedSize);
+        }
+        
+        memcpy(bitmapData, data, copySize);
     }
 
     buffer->Unlock();
@@ -630,10 +624,18 @@ bool MediaFoundationDecoder::Flush() {
 }
 
 bool MediaFoundationDecoder::SetOutputFormat(int format) {
-    // This could be extended to support different output formats
-    // For now, we default to NV12 which is efficient for video
-    LogInfo("SetOutputFormat called with format: %d", format);
-    return true;
+    // Currently, Media Foundation decoder outputs NV12 by default
+    // This method is a placeholder for future format conversion support
+    // For now, only NV12 format is supported
+    
+    if (format == static_cast<int>(PixelFormat::NV12)) {
+        LogInfo("SetOutputFormat: NV12 format (default)");
+        return true;
+    }
+    
+    LogWarning("SetOutputFormat: Format %d not supported, using NV12", format);
+    LogInfo("Only NV12 output format is currently supported. Use Bitmap::ConvertTo() for format conversion.");
+    return false;
 }
 
 } // namespace ului
