@@ -34,6 +34,8 @@ struct MediaFoundationDecoder::MediaFoundationContext {
     DWORD outputStreamID;                 // Output stream identifier
     DWORD inputStreamID;                  // Input stream identifier
     bool mfInitialized;                   // Track MF initialization
+    bool comInitialized;                  // Track if we initialized COM
+    GUID codecSubtype;                    // Current codec subtype GUID
 
     MediaFoundationContext()
         : transform(nullptr)
@@ -42,6 +44,8 @@ struct MediaFoundationDecoder::MediaFoundationContext {
         , outputStreamID(0)
         , inputStreamID(0)
         , mfInitialized(false)
+        , comInitialized(false)
+        , codecSubtype(MFVideoFormat_H264)
     {
     }
 };
@@ -70,18 +74,24 @@ bool MediaFoundationDecoder::InitializeMediaFoundation() {
         return true;
     }
 
-    // Initialize COM
+    // Initialize COM - only track if we succeeded
     HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
+    if (SUCCEEDED(hr)) {
+        m_context->comInitialized = true;
+    } else if (hr != RPC_E_CHANGED_MODE) {
         LogError("Failed to initialize COM: 0x%08X", hr);
         return false;
     }
+    // If RPC_E_CHANGED_MODE, COM was already initialized, we don't need to uninitialize
 
     // Initialize Media Foundation
     hr = MFStartup(MF_VERSION, MFSTARTUP_FULL);
     if (FAILED(hr)) {
         LogError("Failed to initialize Media Foundation: 0x%08X", hr);
-        CoUninitialize();
+        if (m_context->comInitialized) {
+            CoUninitialize();
+            m_context->comInitialized = false;
+        }
         return false;
     }
 
@@ -111,7 +121,13 @@ void MediaFoundationDecoder::CleanupMediaFoundation() {
     }
 
     MFShutdown();
-    CoUninitialize();
+    
+    // Only uninitialize COM if we initialized it
+    if (m_context->comInitialized) {
+        CoUninitialize();
+        m_context->comInitialized = false;
+    }
+    
     m_context->mfInitialized = false;
     LogInfo("Media Foundation cleaned up");
 }
@@ -153,6 +169,9 @@ bool MediaFoundationDecoder::CreateDecoderTransform(const char* mimeType) {
     } else {
         subtypeGuid = MFVideoFormat_H264; // Default
     }
+    
+    // Store the codec subtype for later use in Configure
+    m_context->codecSubtype = subtypeGuid;
 
     // Create decoder category enumeration
     MFT_REGISTER_TYPE_INFO inputInfo = { MFMediaType_Video, subtypeGuid };
@@ -239,7 +258,7 @@ bool MediaFoundationDecoder::Configure(int width, int height, float frameRate, i
     }
 
     inputType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
-    inputType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264); // Will need to adjust based on codec
+    inputType->SetGUID(MF_MT_SUBTYPE, m_context->codecSubtype); // Use the codec from Create()
     inputType->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);
     MFSetAttributeSize(inputType, MF_MT_FRAME_SIZE, width, height);
     
@@ -409,19 +428,21 @@ bool MediaFoundationDecoder::SignalEndOfStream() {
     return SUCCEEDED(hr);
 }
 
-bool MediaFoundationDecoder::HasDecodedFrame() const {
+bool MediaFoundationDecoder::HasDecodedFrame() {
     if (!m_context->transform || !m_isRunning) {
         return false;
     }
 
-    // Check if output is available
+    // Check if output is available by querying stream info
     MFT_OUTPUT_STREAM_INFO streamInfo;
     HRESULT hr = m_context->transform->GetOutputStreamInfo(0, &streamInfo);
     if (FAILED(hr)) {
         return false;
     }
 
-    // If the transform provides samples, we can check status
+    // Try to get output status without actually retrieving the frame
+    // Note: This is a lightweight check, the actual frame retrieval
+    // happens in GetDecodedBitmap()
     MFT_OUTPUT_DATA_BUFFER outputBuffer;
     outputBuffer.dwStreamID = 0;
     outputBuffer.pSample = nullptr;
@@ -429,7 +450,7 @@ bool MediaFoundationDecoder::HasDecodedFrame() const {
     outputBuffer.pEvents = nullptr;
 
     DWORD status = 0;
-    hr = const_cast<IMFTransform*>(m_context->transform)->ProcessOutput(
+    hr = m_context->transform->ProcessOutput(
         MFT_PROCESS_OUTPUT_STATUS_NEW_STREAMS, 1, &outputBuffer, &status);
 
     if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT) {

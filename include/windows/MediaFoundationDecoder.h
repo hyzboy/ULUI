@@ -89,8 +89,9 @@ public:
     /**
      * @brief Check if a decoded frame is available
      * @return true if frame is ready to be retrieved
+     * @note This method is non-const as it may query decoder state
      */
-    bool HasDecodedFrame() const;
+    bool HasDecodedFrame();
 
     /**
      * @brief Flush decoder buffers
