@@ -29,6 +29,9 @@ static const int64_t SECONDS_TO_100NS_UNITS = 10000000;
 // Constants for format calculations
 static const float NV12_BYTES_PER_PIXEL_RATIO = 1.5f;
 
+// Constants for encoder settings
+static const UINT32 DEFAULT_QUALITY_LEVEL = 70; // 0-100 scale for VBR quality
+
 // Media Foundation context holding COM objects
 struct MediaFoundationEncoder::MediaFoundationContext {
     IMFTransform* transform;              // The encoder transform
@@ -302,7 +305,7 @@ bool MediaFoundationEncoder::Create(const char* mimeType, int width, int height,
         codecAPI->SetValue(&CODECAPI_AVEncCommonRateControlMode, &var);
 
         // Set quality level (for VBR)
-        var.ulVal = 70; // 0-100 scale
+        var.ulVal = DEFAULT_QUALITY_LEVEL;
         codecAPI->SetValue(&CODECAPI_AVEncCommonQuality, &var);
 
         codecAPI->Release();
@@ -637,7 +640,7 @@ bool MediaFoundationEncoder::GetEncodedData(uint8_t** buffer, size_t* size,
     
     // Extract config data (SPS/PPS) from first keyframe if not done yet
     // For H.264/H.265, config data is typically in the first keyframe
-    if (!m_context->configDataExtracted && isKeyFrame && *isKeyFrame) {
+    if (!m_context->configDataExtracted && isKeyFrame && isKeyFrame && *isKeyFrame) {
         // Store this as potential config data
         // In H.264/H.265, this would include SPS/PPS NAL units
         m_context->configData.resize(currentLength);
@@ -712,9 +715,10 @@ bool MediaFoundationEncoder::SetKeyframeInterval(int intervalSeconds) {
             
             // Calculate GOP size with overflow protection
             int64_t gopSize = (int64_t)intervalSeconds * (int64_t)m_frameRate;
-            if (gopSize > UINT32_MAX) {
-                LogWarning("GOP size too large, clamping to UINT32_MAX");
-                gopSize = UINT32_MAX;
+            static const int64_t MAX_GOP_SIZE = UINT32_MAX;
+            if (gopSize > MAX_GOP_SIZE) {
+                LogWarning("GOP size too large, clamping to maximum");
+                gopSize = MAX_GOP_SIZE;
             }
             
             var.ulVal = (UINT32)gopSize;
