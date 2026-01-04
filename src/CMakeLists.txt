@@ -35,6 +35,7 @@ if(WIN32)
     list(APPEND SOURCES
         windows/MediaFoundationDecoder.cpp
         windows/MediaFoundationEncoder.cpp
+        windows/MediaFoundationCamera.cpp
     )
 endif()
     
