@@ -18,11 +18,7 @@
 #include <comdef.h>
 #include <initguid.h>
 
-// Link required libraries
-#pragma comment(lib, "mfplat.lib")
-#pragma comment(lib, "mfuuid.lib")
-#pragma comment(lib, "mfreadwrite.lib")
-#pragma comment(lib, "wmcodecdspuuid.lib")
+// Note: Library linking is handled by CMakeLists.txt
 
 namespace ului {
 
@@ -74,15 +70,17 @@ bool MediaFoundationDecoder::InitializeMediaFoundation() {
         return true;
     }
 
-    // Initialize COM - only track if we succeeded
-    HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    // Initialize COM with MULTITHREADED apartment for better compatibility
+    // in multi-threaded applications
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
     if (SUCCEEDED(hr)) {
         m_context->comInitialized = true;
     } else if (hr != RPC_E_CHANGED_MODE) {
         LogError("Failed to initialize COM: 0x%08X", hr);
         return false;
     }
-    // If RPC_E_CHANGED_MODE, COM was already initialized, we don't need to uninitialize
+    // If RPC_E_CHANGED_MODE, COM was already initialized with different threading model,
+    // which is acceptable - we don't need to uninitialize
 
     // Initialize Media Foundation
     hr = MFStartup(MF_VERSION, MFSTARTUP_FULL);
@@ -372,17 +370,17 @@ bool MediaFoundationDecoder::QueueInputBuffer(const uint8_t* data, size_t size,
     DWORD maxLength = 0;
     hr = buffer->Lock(&bufferData, &maxLength, nullptr);
     if (SUCCEEDED(hr)) {
-        // Ensure we don't exceed the allocated buffer size
-        size_t copySize = (size <= maxLength) ? size : maxLength;
-        
-        if (copySize < size) {
-            LogWarning("Input data size (%zu) exceeds buffer capacity (%u), truncating", 
-                      size, maxLength);
+        // Validate buffer size - input data must fit completely
+        if (size > maxLength) {
+            buffer->Unlock();
+            buffer->Release();
+            LogError("Input data size (%zu) exceeds buffer capacity (%u)", size, maxLength);
+            return false;
         }
         
-        memcpy(bufferData, data, copySize);
+        memcpy(bufferData, data, size);
         buffer->Unlock();
-        buffer->SetCurrentLength((DWORD)copySize);
+        buffer->SetCurrentLength((DWORD)size);
     } else {
         buffer->Release();
         LogError("Failed to lock buffer: 0x%08X", hr);
@@ -497,24 +495,30 @@ bool MediaFoundationDecoder::ConvertSampleToBitmap(void* samplePtr, std::shared_
         }
     }
 
-    // Copy data to bitmap with size validation
+    // Copy data to bitmap with strict size validation
     size_t dataSize = currentLength;
     void* bitmapData = bitmap->GetData();
     
-    if (bitmapData && dataSize > 0) {
-        // Get expected bitmap size
-        size_t expectedSize = format.GetDataSize();
-        
-        // Ensure we don't overflow the bitmap buffer
-        size_t copySize = (dataSize < expectedSize) ? dataSize : expectedSize;
-        
-        if (copySize < dataSize) {
-            LogWarning("Decoder output size (%zu) exceeds bitmap size (%zu), truncating", 
-                      dataSize, expectedSize);
-        }
-        
-        memcpy(bitmapData, data, copySize);
+    if (!bitmapData || dataSize == 0) {
+        buffer->Unlock();
+        buffer->Release();
+        LogError("Invalid bitmap data or empty decoder output");
+        return false;
     }
+    
+    // Get expected bitmap size
+    size_t expectedSize = format.GetDataSize();
+    
+    // Validate sizes match - decoder output should match expected bitmap size
+    if (dataSize != expectedSize) {
+        buffer->Unlock();
+        buffer->Release();
+        LogError("Decoder output size (%zu) does not match expected bitmap size (%zu)", 
+                dataSize, expectedSize);
+        return false;
+    }
+    
+    memcpy(bitmapData, data, dataSize);
 
     buffer->Unlock();
     buffer->Release();
