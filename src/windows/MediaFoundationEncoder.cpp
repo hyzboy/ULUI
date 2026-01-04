@@ -22,6 +22,13 @@
 
 namespace ului {
 
+// Constants for time conversions
+static const int64_t MICROSECONDS_TO_100NS_UNITS = 10;
+static const int64_t SECONDS_TO_100NS_UNITS = 10000000;
+
+// Constants for format calculations
+static const float NV12_BYTES_PER_PIXEL_RATIO = 1.5f;
+
 // Media Foundation context holding COM objects
 struct MediaFoundationEncoder::MediaFoundationContext {
     IMFTransform* transform;              // The encoder transform
@@ -381,7 +388,7 @@ bool MediaFoundationEncoder::ConvertBitmapToSample(std::shared_ptr<Bitmap> bitma
     IMFMediaBuffer* buffer = nullptr;
 
     // Calculate buffer size for NV12 format (width * height * 1.5)
-    size_t bufferSize = m_width * m_height * 3 / 2;
+    size_t bufferSize = (size_t)(m_width * m_height * NV12_BYTES_PER_PIXEL_RATIO);
 
     // Create media buffer
     hr = MFCreateMemoryBuffer((DWORD)bufferSize, &buffer);
@@ -427,11 +434,11 @@ bool MediaFoundationEncoder::ConvertBitmapToSample(std::shared_ptr<Bitmap> bitma
     buffer->Release();
 
     // Set sample time
-    LONGLONG sampleTime = timestampUs * 10; // Convert to 100-nanosecond units
+    LONGLONG sampleTime = timestampUs * MICROSECONDS_TO_100NS_UNITS; // Convert to 100-nanosecond units
     sample->SetSampleTime(sampleTime);
     
     // Set sample duration
-    LONGLONG duration = (LONGLONG)((1.0 / m_frameRate) * 10000000); // 100-ns units
+    LONGLONG duration = (LONGLONG)((1.0 / m_frameRate) * SECONDS_TO_100NS_UNITS); // 100-ns units
     sample->SetSampleDuration(duration);
 
     *samplePtr = sample;
@@ -593,7 +600,7 @@ bool MediaFoundationEncoder::GetEncodedData(uint8_t** buffer, size_t* size,
     if (presentationTimeUs) {
         LONGLONG sampleTime = 0;
         if (SUCCEEDED(outputSample->GetSampleTime(&sampleTime))) {
-            *presentationTimeUs = sampleTime / 10; // Convert from 100-ns to microseconds
+            *presentationTimeUs = sampleTime / MICROSECONDS_TO_100NS_UNITS; // Convert from 100-ns to microseconds
         }
     }
 
@@ -629,16 +636,14 @@ bool MediaFoundationEncoder::GetEncodedData(uint8_t** buffer, size_t* size,
     LogDebug("Got encoded data: %zu bytes, keyframe: %d", currentLength, isKeyFrame ? *isKeyFrame : 0);
     
     // Extract config data (SPS/PPS) from first keyframe if not done yet
+    // For H.264/H.265, config data is typically in the first keyframe
     if (!m_context->configDataExtracted && isKeyFrame && *isKeyFrame) {
-        // Check if this has codec-specific data
-        UINT32 codecConfigFlag = 0;
-        if (SUCCEEDED(outputSample->GetUINT32(MFSampleExtension_DecodeTimestamp, &codecConfigFlag))) {
-            // Store this as config data
-            m_context->configData.resize(currentLength);
-            memcpy(m_context->configData.data(), data, currentLength);
-            m_context->configDataExtracted = true;
-            LogInfo("Extracted codec config data: %zu bytes", currentLength);
-        }
+        // Store this as potential config data
+        // In H.264/H.265, this would include SPS/PPS NAL units
+        m_context->configData.resize(currentLength);
+        memcpy(m_context->configData.data(), data, currentLength);
+        m_context->configDataExtracted = true;
+        LogInfo("Extracted codec config data: %zu bytes", currentLength);
     }
     
     return true;
@@ -704,7 +709,15 @@ bool MediaFoundationEncoder::SetKeyframeInterval(int intervalSeconds) {
         if (SUCCEEDED(hr)) {
             VARIANT var;
             var.vt = VT_UI4;
-            var.ulVal = intervalSeconds * m_frameRate; // Convert to frame count
+            
+            // Calculate GOP size with overflow protection
+            int64_t gopSize = (int64_t)intervalSeconds * (int64_t)m_frameRate;
+            if (gopSize > UINT32_MAX) {
+                LogWarning("GOP size too large, clamping to UINT32_MAX");
+                gopSize = UINT32_MAX;
+            }
+            
+            var.ulVal = (UINT32)gopSize;
             codecAPI->SetValue(&CODECAPI_AVEncMPVGOPSize, &var);
             codecAPI->Release();
             return true;
