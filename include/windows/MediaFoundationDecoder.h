@@ -3,6 +3,7 @@
 #ifdef _WIN32
 
 #include "object.h"
+#include "BitmapFormat.h"
 #include <memory>
 #include <cstdint>
 
@@ -104,7 +105,7 @@ public:
      * @param format Desired output format (e.g., PixelFormat::RGBA8, PixelFormat::NV12)
      * @return true on success
      */
-    bool SetOutputFormat(int format);
+    bool SetOutputFormat(PixelFormat format);
 
     // Getters
     int GetWidth() const { return m_width; }

@@ -367,13 +367,22 @@ bool MediaFoundationDecoder::QueueInputBuffer(const uint8_t* data, size_t size,
         return false;
     }
 
-    // Copy data to buffer
+    // Copy data to buffer with bounds validation
     BYTE* bufferData = nullptr;
-    hr = buffer->Lock(&bufferData, nullptr, nullptr);
+    DWORD maxLength = 0;
+    hr = buffer->Lock(&bufferData, &maxLength, nullptr);
     if (SUCCEEDED(hr)) {
-        memcpy(bufferData, data, size);
+        // Ensure we don't exceed the allocated buffer size
+        size_t copySize = (size <= maxLength) ? size : maxLength;
+        
+        if (copySize < size) {
+            LogWarning("Input data size (%zu) exceeds buffer capacity (%u), truncating", 
+                      size, maxLength);
+        }
+        
+        memcpy(bufferData, data, copySize);
         buffer->Unlock();
-        buffer->SetCurrentLength((DWORD)size);
+        buffer->SetCurrentLength((DWORD)copySize);
     } else {
         buffer->Release();
         LogError("Failed to lock buffer: 0x%08X", hr);
@@ -623,17 +632,17 @@ bool MediaFoundationDecoder::Flush() {
     return true;
 }
 
-bool MediaFoundationDecoder::SetOutputFormat(int format) {
+bool MediaFoundationDecoder::SetOutputFormat(PixelFormat format) {
     // Currently, Media Foundation decoder outputs NV12 by default
     // This method is a placeholder for future format conversion support
     // For now, only NV12 format is supported
     
-    if (format == static_cast<int>(PixelFormat::NV12)) {
+    if (format == PixelFormat::NV12) {
         LogInfo("SetOutputFormat: NV12 format (default)");
         return true;
     }
     
-    LogWarning("SetOutputFormat: Format %d not supported, using NV12", format);
+    LogWarning("SetOutputFormat: Format not supported, using NV12");
     LogInfo("Only NV12 output format is currently supported. Use Bitmap::ConvertTo() for format conversion.");
     return false;
 }
