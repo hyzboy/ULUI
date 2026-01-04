@@ -223,7 +223,6 @@ private:
     // Internal helper methods
     bool InitializeMediaFoundation();
     void CleanupMediaFoundation();
-    bool EnumerateDevices();
     bool LoadCameraInfo(void* device, CameraInfo& info);
     bool CreateSourceReader(const std::string& symbolicLink);
     bool ConfigureSourceReader();
@@ -231,9 +230,7 @@ private:
     void ReadFrameThread();
     CameraFacing DetermineCameraFacing(const std::string& name) const;
     
-    // Thread management
-    bool m_threadRunning;
-    void* m_captureThread;  // HANDLE on Windows
+    // Thread management (thread handle is in context)
 };
 
 } // namespace ului

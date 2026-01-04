@@ -70,8 +70,6 @@ MediaFoundationCamera::MediaFoundationCamera()
     , m_width(0)
     , m_height(0)
     , m_frameRate(0)
-    , m_threadRunning(false)
-    , m_captureThread(nullptr)
 {
     m_context = new MediaFoundationContext();
 }
@@ -497,7 +495,7 @@ bool MediaFoundationCamera::ConfigureSourceReader() {
     HRESULT hr;
     DWORD streamIndex = (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM;
     
-    // Set output media type to RGB32 for easy processing
+    // Set output media type to BGRA32 for easy processing (matches Bitmap BGRA8)
     IMFMediaType* outputType = nullptr;
     hr = MFCreateMediaType(&outputType);
     if (FAILED(hr)) {
@@ -506,7 +504,8 @@ bool MediaFoundationCamera::ConfigureSourceReader() {
     }
     
     outputType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
-    outputType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32);
+    // Use ARGB32 which is BGRA byte order (matches BGRA8 in Bitmap)
+    outputType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_ARGB32);
     
     hr = m_context->sourceReader->SetCurrentMediaType(streamIndex, nullptr, outputType);
     outputType->Release();
