@@ -7,6 +7,7 @@ set(SOURCES
     file_system.cpp
     path.cpp
     File.cpp
+    FileUtils.cpp
     InputStream.cpp
     FileInputStream.cpp
     FileOutputStream.cpp
