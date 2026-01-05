@@ -66,7 +66,7 @@ void DataOutputStream::WriteDouble(double v) {
 }
 
 void DataOutputStream::WriteUTF(const std::string& str) {
-    // Java's DataOutputStream.writeUTF() has a 65535 byte limit for UTF-8 encoded data
+    // Limit string length to fit in 16-bit length field
     if (str.length() > 65535) {
         throw std::invalid_argument("String exceeds 65535 bytes for UTF encoding");
     }
@@ -96,32 +96,24 @@ void DataOutputStream::Close() {
 
 void DataOutputStream::WriteUInt16BigEndian(uint16_t v) {
     uint8_t buffer[2];
-    buffer[0] = static_cast<uint8_t>(v >> 8);
-    buffer[1] = static_cast<uint8_t>(v);
+    // Native byte order - direct memory copy
+    std::memcpy(buffer, &v, 2);
     m_out->Write(buffer, 0, 2);
     m_written += 2;
 }
 
 void DataOutputStream::WriteUInt32BigEndian(uint32_t v) {
     uint8_t buffer[4];
-    buffer[0] = static_cast<uint8_t>(v >> 24);
-    buffer[1] = static_cast<uint8_t>(v >> 16);
-    buffer[2] = static_cast<uint8_t>(v >> 8);
-    buffer[3] = static_cast<uint8_t>(v);
+    // Native byte order - direct memory copy
+    std::memcpy(buffer, &v, 4);
     m_out->Write(buffer, 0, 4);
     m_written += 4;
 }
 
 void DataOutputStream::WriteUInt64BigEndian(uint64_t v) {
     uint8_t buffer[8];
-    buffer[0] = static_cast<uint8_t>(v >> 56);
-    buffer[1] = static_cast<uint8_t>(v >> 48);
-    buffer[2] = static_cast<uint8_t>(v >> 40);
-    buffer[3] = static_cast<uint8_t>(v >> 32);
-    buffer[4] = static_cast<uint8_t>(v >> 24);
-    buffer[5] = static_cast<uint8_t>(v >> 16);
-    buffer[6] = static_cast<uint8_t>(v >> 8);
-    buffer[7] = static_cast<uint8_t>(v);
+    // Native byte order - direct memory copy
+    std::memcpy(buffer, &v, 8);
     m_out->Write(buffer, 0, 8);
     m_written += 8;
 }

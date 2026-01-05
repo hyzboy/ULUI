@@ -107,7 +107,7 @@ FileOutputStream fos2(Path("log.txt"), true);
 
 ### DataInputStream
 
-Reads primitive data types in big-endian byte order.
+Reads primitive data types in native byte order.
 
 ```cpp
 #include "DataInputStream.h"
@@ -135,18 +135,18 @@ dis.Close();
 - `ReadBoolean()` - 1 byte
 - `ReadByte()` - Signed 8-bit
 - `ReadUnsignedByte()` - Unsigned 8-bit
-- `ReadShort()` - Signed 16-bit (big-endian)
-- `ReadUnsignedShort()` - Unsigned 16-bit (big-endian)
-- `ReadInt()` - Signed 32-bit (big-endian)
-- `ReadLong()` - Signed 64-bit (big-endian)
-- `ReadFloat()` - 32-bit IEEE 754 (big-endian)
-- `ReadDouble()` - 64-bit IEEE 754 (big-endian)
+- `ReadShort()` - Signed 16-bit (native byte order)
+- `ReadUnsignedShort()` - Unsigned 16-bit (native byte order)
+- `ReadInt()` - Signed 32-bit (native byte order)
+- `ReadLong()` - Signed 64-bit (native byte order)
+- `ReadFloat()` - 32-bit IEEE 754 (native byte order)
+- `ReadDouble()` - 64-bit IEEE 754 (native byte order)
 - `ReadUTF()` - UTF-8 string (2-byte length + UTF-8 bytes)
 - `ReadFully(buffer, length)` - Read exact number of bytes
 
 ### DataOutputStream
 
-Writes primitive data types in big-endian byte order.
+Writes primitive data types in native byte order.
 
 ```cpp
 #include "DataOutputStream.h"
@@ -173,9 +173,9 @@ dos.Close();
 **Methods:**
 - `WriteBoolean(bool)` - 1 byte
 - `WriteByte(int8_t)` - 1 byte
-- `WriteShort(int16_t)` - 2 bytes (big-endian)
-- `WriteInt(int32_t)` - 4 bytes (big-endian)
-- `WriteLong(int64_t)` - 8 bytes (big-endian)
+- `WriteShort(int16_t)` - 2 bytes (native byte order)
+- `WriteInt(int32_t)` - 4 bytes (native byte order)
+- `WriteLong(int64_t)` - 8 bytes (native byte order)
 - `WriteFloat(float)` - 4 bytes (IEEE 754, big-endian)
 - `WriteDouble(double)` - 8 bytes (IEEE 754, big-endian)
 - `WriteUTF(const std::string&)` - UTF-8 string (2-byte length + UTF-8 bytes, max 65535 bytes)
@@ -317,10 +317,10 @@ try {
 
 ## Byte Order
 
-All multi-byte data types use **big-endian** byte order for cross-platform compatibility:
-- Matches Java's DataInputStream/DataOutputStream
-- Network byte order (most significant byte first)
-- Portable across different architectures
+All multi-byte data types use **native** byte order (platform-specific endianness):
+- Typically little-endian on x86/x64 architectures
+- Uses platform's native byte order for efficiency
+- Data files are platform-specific (not cross-platform portable)
 
 ## Comparison with File Class
 

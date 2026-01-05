@@ -12,7 +12,7 @@ namespace ului {
  * 
  * Similar to Java's DataOutputStream, provides methods for writing
  * primitive data types to an underlying output stream.
- * Data is written in big-endian format by default.
+ * Data is written in native byte order (platform-specific endianness).
  */
 class DataOutputStream {
 public:
@@ -48,31 +48,31 @@ public:
     void WriteByte(int8_t v);
 
     /**
-     * @brief Write a signed short (2 bytes, big-endian)
+     * @brief Write a signed short (2 bytes, native byte order)
      * @param v The short value
      */
     void WriteShort(int16_t v);
 
     /**
-     * @brief Write a signed int (4 bytes, big-endian)
+     * @brief Write a signed int (4 bytes, native byte order)
      * @param v The int value
      */
     void WriteInt(int32_t v);
 
     /**
-     * @brief Write a signed long (8 bytes, big-endian)
+     * @brief Write a signed long (8 bytes, native byte order)
      * @param v The long value
      */
     void WriteLong(int64_t v);
 
     /**
-     * @brief Write a float (4 bytes, IEEE 754, big-endian)
+     * @brief Write a float (4 bytes, IEEE 754, native byte order)
      * @param v The float value
      */
     void WriteFloat(float v);
 
     /**
-     * @brief Write a double (8 bytes, IEEE 754, big-endian)
+     * @brief Write a double (8 bytes, IEEE 754, native byte order)
      * @param v The double value
      */
     void WriteDouble(double v);
@@ -81,7 +81,7 @@ public:
      * @brief Write a UTF-8 string
      * @param str The string to write
      * 
-     * Format: 2-byte length (big-endian) followed by UTF-8 bytes
+     * Format: 2-byte length (native byte order) followed by UTF-8 bytes
      */
     void WriteUTF(const std::string& str);
 

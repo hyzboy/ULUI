@@ -12,7 +12,7 @@ namespace ului {
  * 
  * Similar to Java's DataInputStream, provides methods for reading
  * primitive data types from an underlying input stream.
- * Data is read in big-endian format by default.
+ * Data is read in native byte order (platform-specific endianness).
  */
 class DataInputStream {
 public:
@@ -54,37 +54,37 @@ public:
     uint8_t ReadUnsignedByte();
 
     /**
-     * @brief Read a signed short (2 bytes, big-endian)
+     * @brief Read a signed short (2 bytes, native byte order)
      * @return The short value
      */
     int16_t ReadShort();
 
     /**
-     * @brief Read an unsigned short (2 bytes, big-endian)
+     * @brief Read an unsigned short (2 bytes, native byte order)
      * @return The unsigned short value
      */
     uint16_t ReadUnsignedShort();
 
     /**
-     * @brief Read a signed int (4 bytes, big-endian)
+     * @brief Read a signed int (4 bytes, native byte order)
      * @return The int value
      */
     int32_t ReadInt();
 
     /**
-     * @brief Read a signed long (8 bytes, big-endian)
+     * @brief Read a signed long (8 bytes, native byte order)
      * @return The long value
      */
     int64_t ReadLong();
 
     /**
-     * @brief Read a float (4 bytes, IEEE 754, big-endian)
+     * @brief Read a float (4 bytes, IEEE 754, native byte order)
      * @return The float value
      */
     float ReadFloat();
 
     /**
-     * @brief Read a double (8 bytes, IEEE 754, big-endian)
+     * @brief Read a double (8 bytes, IEEE 754, native byte order)
      * @return The double value
      */
     double ReadDouble();
@@ -93,7 +93,7 @@ public:
      * @brief Read a UTF-8 string
      * @return The string value
      * 
-     * Format: 2-byte length (big-endian) followed by UTF-8 bytes
+     * Format: 2-byte length (native byte order) followed by UTF-8 bytes
      */
     std::string ReadUTF();
 

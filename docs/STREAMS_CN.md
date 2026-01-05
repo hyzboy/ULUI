@@ -107,7 +107,7 @@ FileOutputStream fos2(Path("log.txt"), true);
 
 ### DataInputStream
 
-以大端字节序读取基本数据类型。
+以本机字节序读取基本数据类型。
 
 ```cpp
 #include "DataInputStream.h"
@@ -135,18 +135,18 @@ dis.Close();
 - `ReadBoolean()` - 1字节
 - `ReadByte()` - 有符号8位
 - `ReadUnsignedByte()` - 无符号8位
-- `ReadShort()` - 有符号16位（大端）
-- `ReadUnsignedShort()` - 无符号16位（大端）
-- `ReadInt()` - 有符号32位（大端）
-- `ReadLong()` - 有符号64位（大端）
-- `ReadFloat()` - 32位IEEE 754（大端）
-- `ReadDouble()` - 64位IEEE 754（大端）
+- `ReadShort()` - 有符号16位（本机字节序）
+- `ReadUnsignedShort()` - 无符号16位（本机字节序）
+- `ReadInt()` - 有符号32位（本机字节序）
+- `ReadLong()` - 有符号64位（本机字节序）
+- `ReadFloat()` - 32位IEEE 754（本机字节序）
+- `ReadDouble()` - 64位IEEE 754（本机字节序）
 - `ReadUTF()` - UTF-8字符串（2字节长度 + UTF-8字节）
 - `ReadFully(buffer, length)` - 读取确切数量的字节
 
 ### DataOutputStream
 
-以大端字节序写入基本数据类型。
+以本机字节序写入基本数据类型。
 
 ```cpp
 #include "DataOutputStream.h"
@@ -173,11 +173,11 @@ dos.Close();
 **方法：**
 - `WriteBoolean(bool)` - 1字节
 - `WriteByte(int8_t)` - 1字节
-- `WriteShort(int16_t)` - 2字节（大端）
-- `WriteInt(int32_t)` - 4字节（大端）
-- `WriteLong(int64_t)` - 8字节（大端）
-- `WriteFloat(float)` - 4字节（IEEE 754，大端）
-- `WriteDouble(double)` - 8字节（IEEE 754，大端）
+- `WriteShort(int16_t)` - 2字节（本机字节序）
+- `WriteInt(int32_t)` - 4字节（本机字节序）
+- `WriteLong(int64_t)` - 8字节（本机字节序）
+- `WriteFloat(float)` - 4字节（IEEE 754，本机字节序）
+- `WriteDouble(double)` - 8字节（IEEE 754，本机字节序）
 - `WriteUTF(const std::string&)` - UTF-8字符串（2字节长度 + UTF-8字节，最大65535字节）
 - `GetBytesWritten()` - 已写入的总字节数
 
@@ -279,10 +279,10 @@ try {
 
 ## 字节序
 
-所有多字节数据类型使用**大端**字节序以实现跨平台兼容性：
-- 与Java的DataInputStream/DataOutputStream匹配
-- 网络字节序（最高有效字节在前）
-- 可在不同架构间移植
+所有多字节数据类型使用**本机**字节序（平台特定的字节序）：
+- x86/x64架构通常是小端字节序
+- 使用平台的本机字节序以提高效率
+- 数据文件是平台特定的（不可跨平台移植）
 
 ## 与File类的比较
 

@@ -119,32 +119,30 @@ void DataInputStream::Close() {
 }
 
 uint16_t DataInputStream::ReadUInt16BigEndian() {
+    uint16_t value;
     uint8_t buffer[2];
     ReadFully(buffer, 2);
-    return (static_cast<uint16_t>(buffer[0]) << 8) |
-           (static_cast<uint16_t>(buffer[1]));
+    // Native byte order - direct memory copy
+    std::memcpy(&value, buffer, 2);
+    return value;
 }
 
 uint32_t DataInputStream::ReadUInt32BigEndian() {
+    uint32_t value;
     uint8_t buffer[4];
     ReadFully(buffer, 4);
-    return (static_cast<uint32_t>(buffer[0]) << 24) |
-           (static_cast<uint32_t>(buffer[1]) << 16) |
-           (static_cast<uint32_t>(buffer[2]) << 8) |
-           (static_cast<uint32_t>(buffer[3]));
+    // Native byte order - direct memory copy
+    std::memcpy(&value, buffer, 4);
+    return value;
 }
 
 uint64_t DataInputStream::ReadUInt64BigEndian() {
+    uint64_t value;
     uint8_t buffer[8];
     ReadFully(buffer, 8);
-    return (static_cast<uint64_t>(buffer[0]) << 56) |
-           (static_cast<uint64_t>(buffer[1]) << 48) |
-           (static_cast<uint64_t>(buffer[2]) << 40) |
-           (static_cast<uint64_t>(buffer[3]) << 32) |
-           (static_cast<uint64_t>(buffer[4]) << 24) |
-           (static_cast<uint64_t>(buffer[5]) << 16) |
-           (static_cast<uint64_t>(buffer[6]) << 8) |
-           (static_cast<uint64_t>(buffer[7]));
+    // Native byte order - direct memory copy
+    std::memcpy(&value, buffer, 8);
+    return value;
 }
 
 } // namespace ului
