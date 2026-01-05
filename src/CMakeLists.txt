@@ -10,6 +10,8 @@ set(SOURCES
     InputStream.cpp
     FileInputStream.cpp
     FileOutputStream.cpp
+    MemoryInputStream.cpp
+    MemoryOutputStream.cpp
     DataInputStream.cpp
     DataOutputStream.cpp
     logger_common.cpp
