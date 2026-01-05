@@ -446,7 +446,7 @@ bool File::OpenAsExternal(const Path& path, OpenMode mode) {
     m_fileHandle = file;
     m_isAsset = false;
     m_isOpen = true;
-    m_position = 0;
+    // m_position is only used for asset files, not for external files
     
     return true;
 }
