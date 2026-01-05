@@ -6,6 +6,7 @@ set(SOURCES
     triangle_app.cpp
     file_system.cpp
     path.cpp
+    File.cpp
     logger_common.cpp
     object.cpp
     log/ObjectLogger.cpp
