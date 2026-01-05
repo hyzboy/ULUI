@@ -6,6 +6,15 @@ set(SOURCES
     triangle_app.cpp
     file_system.cpp
     path.cpp
+    File.cpp
+    FileUtils.cpp
+    InputStream.cpp
+    FileInputStream.cpp
+    FileOutputStream.cpp
+    MemoryInputStream.cpp
+    MemoryOutputStream.cpp
+    DataInputStream.cpp
+    DataOutputStream.cpp
     logger_common.cpp
     object.cpp
     log/ObjectLogger.cpp
