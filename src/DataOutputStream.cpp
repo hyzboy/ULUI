@@ -66,8 +66,9 @@ void DataOutputStream::WriteDouble(double v) {
 }
 
 void DataOutputStream::WriteUTF(const std::string& str) {
+    // Java's DataOutputStream.writeUTF() has a 65535 byte limit for UTF-8 encoded data
     if (str.length() > 65535) {
-        throw std::invalid_argument("String too long for UTF encoding");
+        throw std::invalid_argument("String exceeds 65535 bytes for UTF encoding");
     }
     
     WriteUInt16BigEndian(static_cast<uint16_t>(str.length()));

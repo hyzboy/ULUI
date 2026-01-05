@@ -128,13 +128,17 @@ int FileInputStream::Available() {
         FILE* file = static_cast<FILE*>(m_fileHandle);
 #ifdef _WIN32
         int64_t currentPos = _ftelli64(file);
-        _fseeki64(file, 0, SEEK_END);
+        if (currentPos < 0) return 0;
+        if (_fseeki64(file, 0, SEEK_END) != 0) return 0;
         int64_t endPos = _ftelli64(file);
+        if (endPos < 0) return 0;
         _fseeki64(file, currentPos, SEEK_SET);
 #else
         int64_t currentPos = ftello(file);
-        fseeko(file, 0, SEEK_END);
+        if (currentPos < 0) return 0;
+        if (fseeko(file, 0, SEEK_END) != 0) return 0;
         int64_t endPos = ftello(file);
+        if (endPos < 0) return 0;
         fseeko(file, currentPos, SEEK_SET);
 #endif
         return static_cast<int>(endPos - currentPos);

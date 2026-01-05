@@ -101,7 +101,7 @@ void DataInputStream::ReadFully(uint8_t* buffer, size_t length) {
     size_t offset = 0;
     while (offset < length) {
         int bytesRead = m_in->Read(buffer, offset, length - offset);
-        if (bytesRead < 0) {
+        if (bytesRead <= 0) {  // Check for both error (-1) and EOF (0)
             throw std::runtime_error("End of stream");
         }
         offset += bytesRead;
