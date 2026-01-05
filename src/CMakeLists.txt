@@ -7,6 +7,11 @@ set(SOURCES
     file_system.cpp
     path.cpp
     File.cpp
+    InputStream.cpp
+    FileInputStream.cpp
+    FileOutputStream.cpp
+    DataInputStream.cpp
+    DataOutputStream.cpp
     logger_common.cpp
     object.cpp
     log/ObjectLogger.cpp
