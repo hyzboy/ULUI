@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.20)
 set(SOURCES
     main.cpp
     triangle_app.cpp
+    ecs_app.cpp
     file_system.cpp
     path.cpp
     File.cpp
