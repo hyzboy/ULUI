@@ -28,6 +28,7 @@ set(SOURCES
     gl/RenderTarget.cpp
     Bitmap.cpp
     BitmapFormat.cpp
+    ecs/ComponentManager.cpp
 )
 
 # Add Android MediaCodec sources if building for Android
