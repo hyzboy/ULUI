@@ -70,8 +70,8 @@ public:
                 
                 if (transform && sprite && renderable && renderable->visible) {
                     std::cout << "Entity " << entity 
-                              << " at (" << transform->x << ", " << transform->y << ")"
-                              << " rotation: " << transform->rotation
+                              << " at (" << transform->GetX() << ", " << transform->GetY() << ")"
+                              << " rotation: " << transform->GetRotation()
                               << " texture: " << sprite->texturePath
                               << " layer: " << renderable->layer
                               << std::endl;
@@ -113,7 +113,7 @@ int main() {
     
     // Create an enemy entity manually
     Entity enemy = world.CreateEntity();
-    world.AddComponent(enemy, std::make_unique<Transform2D>(300.0f, 150.0f));
+    world.AddComponent(enemy, std::make_unique<Transform2D>(&world.GetTransformStorage2D(), 300.0f, 150.0f));
     
     auto enemySprite = std::make_unique<Sprite2D>("enemy.png");
     enemySprite->SetSize(48.0f, 48.0f);

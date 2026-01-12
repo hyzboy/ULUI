@@ -34,11 +34,21 @@ Entity player = world.CreateEntity();
 
 Pure data containers attached to entities to describe their properties.
 
+**重要**: Transform2D 使用 SOA (Structure of Arrays) 架构存储数据，提高缓存性能。组件本身只存储索引，实际数据存储在 `TransformDataStorage2D` 中。
+
+**Important**: Transform2D uses SOA (Structure of Arrays) architecture for better cache performance. The component stores only an index; actual data is stored in `TransformDataStorage2D`.
+
 ```cpp
+// Transform2D uses SOA pattern - data stored separately
 struct Transform2D : public Component {
-    float x, y;           // Position
-    float rotation;       // Rotation in radians
-    float scaleX, scaleY; // Scale factors
+    uint32_t dataIndex;                  // Index to data
+    TransformDataStorage2D* storage;     // Shared storage
+    
+    // Access via getter/setter methods
+    float GetX() const;
+    void SetX(float value);
+    void SetPosition(float x, float y);
+    void Translate(float dx, float dy);
 };
 ```
 
@@ -70,14 +80,28 @@ world.Update(deltaTime);
 ## 2D 组件 / 2D Components
 
 ### Transform2D
-位置、旋转和缩放变换。
+位置、旋转和缩放变换（使用 SOA 模式）。
 
-Position, rotation, and scale transformation.
+Position, rotation, and scale transformation (using SOA pattern).
+
+**注意**: 必须通过 World 的 TransformStorage2D 创建。使用 getter/setter 访问数据。
+
+**Note**: Must be created with World's TransformStorage2D. Use getter/setter methods to access data.
 
 ```cpp
-auto transform = std::make_unique<Transform2D>(100.0f, 200.0f);
-transform->SetRotation(1.57f);  // 90 degrees in radians
-transform->SetScale(2.0f);       // Uniform scale
+// Use helper function (recommended)
+Entity entity = CreateEntity2D(world, 100.0f, 200.0f);
+
+// Or create manually
+auto transform = std::make_unique<Transform2D>(&world.GetTransformStorage2D(), 100.0f, 200.0f);
+world.AddComponent(entity, std::move(transform));
+
+// Access data via methods (not direct field access)
+Transform2D* t = world.GetComponent<Transform2D>(entity);
+t->SetRotation(1.57f);  // 90 degrees in radians
+t->SetScale(2.0f);      // Uniform scale
+float x = t->GetX();    // Get position
+t->Translate(10, 0);    // Move right
 world.AddComponent(entity, std::move(transform));
 ```
 
@@ -234,21 +258,38 @@ for (Entity entity : world.GetAllEntities()) {
    Don't put logic in components
    Keep components simple and serializable
 
-2. **系统包含逻辑** / Systems Contain Logic
+2. **使用 SOA 优化性能** / Use SOA for Performance Optimization
+   - Transform2D 使用 Structure of Arrays (SOA) 模式
+   - 所有 Transform 数据存储在连续内存中
+   - 提高缓存命中率，特别是在批量处理时
+   
+   Transform2D uses Structure of Arrays (SOA) pattern
+   All Transform data stored in contiguous memory
+   Improves cache hit rate, especially for batch processing
+   
+   ```cpp
+   // SOA allows efficient batch operations
+   TransformDataStorage2D& storage = world.GetTransformStorage2D();
+   const float* posX = storage.GetPositionXArray();
+   const float* posY = storage.GetPositionYArray();
+   // Can process arrays efficiently with SIMD
+   ```
+
+3. **系统包含逻辑** / Systems Contain Logic
    - 所有游戏逻辑都在系统中
    - 系统是无状态的（状态在组件中）
    
    All game logic goes in systems
    Systems are stateless (state is in components)
 
-3. **实体只是 ID** / Entities Are Just IDs
+4. **实体只是 ID** / Entities Are Just IDs
    - 实体不存储数据
    - 实体通过组件组合定义
    
    Entities don't store data
    Entities are defined by component composition
 
-4. **使用组合而非继承** / Use Composition Over Inheritance
+5. **使用组合而非继承** / Use Composition Over Inheritance
    - 通过添加组件来扩展功能
    - 避免深层继承层次
    
@@ -257,18 +298,26 @@ for (Entity entity : world.GetAllEntities()) {
 
 ## 性能注意事项 / Performance Considerations
 
-当前实现使用基于 map 的简单方法，适合中小规模应用。
+当前实现针对性能进行了优化：
 
-Current implementation uses a simple map-based approach suitable for small to medium scale applications.
+Current implementation is optimized for performance:
 
-未来优化方向：
+**已实现 / Implemented:**
+- ✅ **SOA 架构**: Transform2D 使用 Structure of Arrays，数据连续存储
+- ✅ **缓存友好**: 批量处理 Transform 数据时缓存命中率高
+- ✅ **SIMD 就绪**: 数据布局支持向量化操作
+
+- ✅ **SOA Architecture**: Transform2D uses Structure of Arrays with contiguous data storage
+- ✅ **Cache-friendly**: High cache hit rate when batch processing Transform data
+- ✅ **SIMD-ready**: Data layout supports vectorized operations
+
+**未来优化方向 / Future optimization directions:**
 - 使用对象池减少内存分配
-- 使用数组存储提高缓存局部性
+- 为其他组件添加 SOA 存储
 - 添加组件缓存和批处理
 
-Future optimization directions:
 - Use object pools to reduce memory allocation
-- Use array storage for better cache locality
+- Add SOA storage for other component types
 - Add component caching and batching
 
 ## 与现有代码集成 / Integration with Existing Code

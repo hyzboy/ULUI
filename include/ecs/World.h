@@ -4,6 +4,7 @@
 #include "Component.h"
 #include "System.h"
 #include "ComponentManager.h"
+#include "TransformDataStorage2D.h"
 #include <memory>
 #include <vector>
 #include <algorithm>
@@ -124,11 +125,21 @@ public:
         return m_componentManager;
     }
     
+    /**
+     * Get the Transform2D data storage (SOA storage)
+     */
+    TransformDataStorage2D& GetTransformStorage2D() {
+        return m_transformStorage2D;
+    }
+    
 private:
     Entity m_nextEntityId;
     std::vector<Entity> m_entities;
     ComponentManager m_componentManager;
     std::vector<std::unique_ptr<System>> m_systems;
+    
+    // SOA storage for Transform2D data
+    TransformDataStorage2D m_transformStorage2D;
 };
 
 } // namespace ecs

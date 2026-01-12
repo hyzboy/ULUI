@@ -19,7 +19,7 @@
  *     Entity player = world.CreateEntity();
  * 
  *     // Add components
- *     auto transform = std::make_unique<Transform2D>(100.0f, 200.0f);
+ *     auto transform = std::make_unique<Transform2D>(&world.GetTransformStorage2D(), 100.0f, 200.0f);
  *     world.AddComponent(player, std::move(transform));
  * 
  *     auto sprite = std::make_unique<Sprite2D>("player.png");
@@ -68,7 +68,7 @@ namespace ecs {
  */
 inline Entity CreateEntity2D(World& world, float x = 0.0f, float y = 0.0f) {
     Entity entity = world.CreateEntity();
-    world.AddComponent(entity, std::make_unique<Transform2D>(x, y));
+    world.AddComponent(entity, std::make_unique<Transform2D>(&world.GetTransformStorage2D(), x, y));
     return entity;
 }
 
@@ -81,7 +81,7 @@ inline Entity CreateSpriteEntity(World& world, const std::string& texturePath,
     Entity entity = world.CreateEntity();
     
     // Add Transform2D
-    world.AddComponent(entity, std::make_unique<Transform2D>(x, y));
+    world.AddComponent(entity, std::make_unique<Transform2D>(&world.GetTransformStorage2D(), x, y));
     
     // Add Sprite2D
     auto sprite = std::make_unique<Sprite2D>(texturePath);
