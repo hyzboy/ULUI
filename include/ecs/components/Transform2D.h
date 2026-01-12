@@ -2,6 +2,7 @@
 
 #include "../Component.h"
 #include <cmath>
+#include <numbers>
 
 namespace ului {
 namespace ecs {
@@ -65,7 +66,7 @@ struct Transform2D : public Component {
      * Set rotation in degrees
      */
     void SetRotationDegrees(float degrees) {
-        rotation = degrees * 3.14159265359f / 180.0f;
+        rotation = degrees * std::numbers::pi_v<float> / 180.0f;
     }
     
     /**
