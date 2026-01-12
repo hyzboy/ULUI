@@ -267,28 +267,28 @@ ULUI 提供专为 2D 应用设计的 ECS 架构，帮助组织游戏逻辑：
 #include "ecs/ECS.h"
 using namespace ului::ecs;
 
-// 创建世界
-World world;
+// 创建场景
+Scene scene;
 
 // 创建实体和组件
-Entity player = CreateSpriteEntity(world, "player.png", 100, 100, 64, 64);
+Entity player = CreateSpriteEntity(scene, "player.png", 100, 100, 64, 64);
 
 // 访问组件
-Transform2D* transform = world.GetComponent<Transform2D>(player);
+Transform2D* transform = scene.GetComponent<Transform2D>(player);
 transform->Translate(10.0f, 0.0f);
 
 // 添加系统
-world.AddSystem(std::make_unique<RenderSystem>());
+scene.AddSystem(std::make_unique<RenderSystem>());
 
 // 更新
-world.Update(deltaTime);
+scene.Update(deltaTime);
 ```
 
 **核心概念**:
 - **Entity (实体)**: 轻量级唯一标识符
 - **Component (组件)**: 纯数据容器 (Transform2D, Sprite2D, Renderable2D)
 - **System (系统)**: 处理实体的逻辑
-- **World (世界)**: 管理所有实体、组件和系统
+- **Scene (场景)**: 管理所有实体、组件和系统
 
 完整文档请参阅:
 - [docs/ECS.md](docs/ECS.md) - ECS 架构详细说明

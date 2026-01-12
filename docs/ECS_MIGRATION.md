@@ -26,7 +26,7 @@ public:
         InitializeOldSystem();
         
         // New ECS code
-        m_world = std::make_unique<ecs::World>();
+        m_world = std::make_unique<ecs::Scene>();
         m_world->AddSystem(std::make_unique<RenderSystem2D>());
     }
     
@@ -37,7 +37,7 @@ public:
     }
     
 private:
-    std::unique_ptr<ecs::World> m_world;
+    std::unique_ptr<ecs::Scene> m_world;
 };
 ```
 
@@ -85,18 +85,18 @@ class Player {
 **迁移后 / After:**
 ```cpp
 // Create entity
-Entity player = world.CreateEntity();
+Entity player = scene.CreateEntity();
 
 // Add components (data only)
-world.AddComponent(player, std::make_unique<Transform2D>(x, y));
+scene.AddComponent(player, std::make_unique<Transform2D>(x, y));
 
 auto sprite = std::make_unique<Sprite2D>(texturePath);
-world.AddComponent(player, std::move(sprite));
+scene.AddComponent(player, std::move(sprite));
 
-world.AddComponent(player, std::make_unique<Renderable2D>(true, 1));
+scene.AddComponent(player, std::make_unique<Renderable2D>(true, 1));
 
 auto velocity = std::make_unique<Velocity2D>(velocityX, 0);
-world.AddComponent(player, std::move(velocity));
+scene.AddComponent(player, std::move(velocity));
 
 // Logic moves to systems
 class PlayerSystem : public System {
@@ -129,11 +129,11 @@ class FlyingEnemy : public Enemy {
 **迁移后 / After:**
 ```cpp
 // Base entity with common components
-Entity enemy = CreateSpriteEntity(world, "enemy.png", x, y);
+Entity enemy = CreateSpriteEntity(scene, "enemy.png", x, y);
 
 // Flying behavior through components
-world.AddComponent(enemy, std::make_unique<Velocity2D>(vx, vy));
-world.AddComponent(enemy, std::make_unique<FlyingBehavior>());
+scene.AddComponent(enemy, std::make_unique<Velocity2D>(vx, vy));
+scene.AddComponent(enemy, std::make_unique<FlyingBehavior>());
 
 // Systems handle different behaviors
 class FlyingSystem : public System {
@@ -239,17 +239,17 @@ class UIInputSystem : public System {
 };
 
 // Usage
-Entity button = world.CreateEntity();
-world.AddComponent(button, std::make_unique<Transform2D>(100, 100));
-world.AddComponent(button, std::make_unique<Bounds2D>(200, 50));
-world.AddComponent(button, std::make_unique<UIInteractive>());
+Entity button = scene.CreateEntity();
+scene.AddComponent(button, std::make_unique<Transform2D>(100, 100));
+scene.AddComponent(button, std::make_unique<Bounds2D>(200, 50));
+scene.AddComponent(button, std::make_unique<UIInteractive>());
 
 auto uiButton = std::make_unique<UIButton>();
 uiButton->text = "Click Me";
 uiButton->onClick = []() { std::cout << "Clicked!" << std::endl; };
-world.AddComponent(button, std::move(uiButton));
+scene.AddComponent(button, std::move(uiButton));
 
-world.AddComponent(button, std::make_unique<Renderable2D>(true, 100));
+scene.AddComponent(button, std::make_unique<Renderable2D>(true, 100));
 ```
 
 ## 性能考虑 / Performance Considerations

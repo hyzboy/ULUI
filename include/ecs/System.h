@@ -6,14 +6,14 @@
 namespace ului {
 namespace ecs {
 
-class World;
+class Scene;
 
 /**
  * Base class for all systems in the ECS architecture.
  * Systems contain logic that operates on entities with specific components.
  * 
  * Systems should:
- * - Query the World for entities with required components
+ * - Query the Scene for entities with required components
  * - Process those entities in Update()
  * - Not store entity-specific state (use components for that)
  */
@@ -23,9 +23,9 @@ public:
     
     /**
      * Initialize the system
-     * Called once when the system is added to the world
+     * Called once when the system is added to the scene
      */
-    virtual void Initialize(World* world) { m_world = world; }
+    virtual void Initialize(Scene* scene) { m_scene = scene; }
     
     /**
      * Update the system
@@ -40,7 +40,7 @@ public:
     virtual void Shutdown() {}
     
 protected:
-    World* m_world = nullptr;
+    Scene* m_scene = nullptr;
 };
 
 } // namespace ecs

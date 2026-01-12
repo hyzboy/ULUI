@@ -33,13 +33,13 @@ class MovementSystem : public System {
 public:
     void Update(float deltaTime) override {
         // Get all entities with Transform2D component
-        auto entities = m_world->GetEntitiesWithComponent<Transform2D>();
+        auto entities = m_scene->GetEntitiesWithComponent<Transform2D>();
         
         for (Entity entity : entities) {
             // Check if entity also has Velocity2D
-            if (m_world->HasComponent<Velocity2D>(entity)) {
-                Transform2D* transform = m_world->GetComponent<Transform2D>(entity);
-                Velocity2D* velocity = m_world->GetComponent<Velocity2D>(entity);
+            if (m_scene->HasComponent<Velocity2D>(entity)) {
+                Transform2D* transform = m_scene->GetComponent<Transform2D>(entity);
+                Velocity2D* velocity = m_scene->GetComponent<Velocity2D>(entity);
                 
                 if (transform && velocity) {
                     // Apply velocity
@@ -56,17 +56,17 @@ class RenderSystem : public System {
 public:
     void Update(float deltaTime) override {
         // Get all entities with both Transform2D and Sprite2D
-        auto entities = m_world->GetEntitiesWithComponent<Transform2D>();
+        auto entities = m_scene->GetEntitiesWithComponent<Transform2D>();
         
         std::cout << "=== Rendering Frame ===" << std::endl;
         
         for (Entity entity : entities) {
-            if (m_world->HasComponent<Sprite2D>(entity) &&
-                m_world->HasComponent<Renderable2D>(entity)) {
+            if (m_scene->HasComponent<Sprite2D>(entity) &&
+                m_scene->HasComponent<Renderable2D>(entity)) {
                 
-                Transform2D* transform = m_world->GetComponent<Transform2D>(entity);
-                Sprite2D* sprite = m_world->GetComponent<Sprite2D>(entity);
-                Renderable2D* renderable = m_world->GetComponent<Renderable2D>(entity);
+                Transform2D* transform = m_scene->GetComponent<Transform2D>(entity);
+                Sprite2D* sprite = m_scene->GetComponent<Sprite2D>(entity);
+                Renderable2D* renderable = m_scene->GetComponent<Renderable2D>(entity);
                 
                 if (transform && sprite && renderable && renderable->visible) {
                     std::cout << "Entity " << entity 
@@ -86,24 +86,24 @@ int main() {
     std::cout << "ULUI ECS Example - 2D Entity Component System" << std::endl;
     std::cout << "=============================================" << std::endl << std::endl;
     
-    // Create the ECS world
-    World world;
+    // Create the ECS scene
+    Scene scene;
     
-    // Add systems to the world
-    world.AddSystem(std::make_unique<MovementSystem>());
-    world.AddSystem(std::make_unique<RenderSystem>());
+    // Add systems to the scene
+    scene.AddSystem(std::make_unique<MovementSystem>());
+    scene.AddSystem(std::make_unique<RenderSystem>());
     
     std::cout << "1. Creating entities..." << std::endl;
     
     // Create a player entity using helper function
-    Entity player = CreateSpriteEntity(world, "player.png", 100.0f, 100.0f, 64.0f, 64.0f);
+    Entity player = CreateSpriteEntity(scene, "player.png", 100.0f, 100.0f, 64.0f, 64.0f);
     
     // Add velocity to player
     auto playerVelocity = std::make_unique<Velocity2D>(50.0f, 0.0f);  // Moving right
-    world.AddComponent(player, std::move(playerVelocity));
+    scene.AddComponent(player, std::move(playerVelocity));
     
     // Customize player renderable
-    Renderable2D* playerRenderable = world.GetComponent<Renderable2D>(player);
+    Renderable2D* playerRenderable = scene.GetComponent<Renderable2D>(player);
     if (playerRenderable) {
         playerRenderable->SetLayer(10);
         playerRenderable->SetTint(255, 200, 200);  // Slight red tint
@@ -112,22 +112,22 @@ int main() {
     std::cout << "   Created player entity (ID: " << player << ")" << std::endl;
     
     // Create an enemy entity manually
-    Entity enemy = world.CreateEntity();
-    world.AddComponent(enemy, std::make_unique<Transform2D>(&world.GetTransformStorage2D(), 300.0f, 150.0f));
+    Entity enemy = scene.CreateEntity();
+    scene.AddComponent(enemy, std::make_unique<Transform2D>(&scene.GetTransformStorage2D(), 300.0f, 150.0f));
     
     auto enemySprite = std::make_unique<Sprite2D>("enemy.png");
     enemySprite->SetSize(48.0f, 48.0f);
     enemySprite->SetCenterPivot();
-    world.AddComponent(enemy, std::move(enemySprite));
+    scene.AddComponent(enemy, std::move(enemySprite));
     
-    world.AddComponent(enemy, std::make_unique<Renderable2D>(true, 5));
-    world.AddComponent(enemy, std::make_unique<Velocity2D>(-30.0f, 20.0f));  // Moving left and down
+    scene.AddComponent(enemy, std::make_unique<Renderable2D>(true, 5));
+    scene.AddComponent(enemy, std::make_unique<Velocity2D>(-30.0f, 20.0f));  // Moving left and down
     
     std::cout << "   Created enemy entity (ID: " << enemy << ")" << std::endl;
     
     // Create a static background entity (no velocity)
-    Entity background = CreateSpriteEntity(world, "background.png", 0.0f, 0.0f, 800.0f, 600.0f);
-    Renderable2D* bgRenderable = world.GetComponent<Renderable2D>(background);
+    Entity background = CreateSpriteEntity(scene, "background.png", 0.0f, 0.0f, 800.0f, 600.0f);
+    Renderable2D* bgRenderable = scene.GetComponent<Renderable2D>(background);
     if (bgRenderable) {
         bgRenderable->SetLayer(0);  // Behind everything
     }
@@ -142,7 +142,7 @@ int main() {
     
     for (int frame = 0; frame < 3; frame++) {
         std::cout << "Frame " << frame << " (dt=" << deltaTime << "s):" << std::endl;
-        world.Update(deltaTime);
+        scene.Update(deltaTime);
         std::cout << std::endl;
     }
     
@@ -150,18 +150,18 @@ int main() {
     std::cout << "3. Modifying entities..." << std::endl;
     
     // Rotate player
-    Transform2D* playerTransform = world.GetComponent<Transform2D>(player);
+    Transform2D* playerTransform = scene.GetComponent<Transform2D>(player);
     if (playerTransform) {
         playerTransform->SetRotationDegrees(45.0f);
         std::cout << "   Rotated player 45 degrees" << std::endl;
     }
     
     // Stop enemy movement
-    world.RemoveComponent<Velocity2D>(enemy);
+    scene.RemoveComponent<Velocity2D>(enemy);
     std::cout << "   Removed enemy velocity (stopped)" << std::endl;
     
     // Hide background
-    Renderable2D* bgRend = world.GetComponent<Renderable2D>(background);
+    Renderable2D* bgRend = scene.GetComponent<Renderable2D>(background);
     if (bgRend) {
         bgRend->SetVisible(false);
         std::cout << "   Hidden background" << std::endl;
@@ -169,27 +169,27 @@ int main() {
     
     std::cout << std::endl;
     std::cout << "4. Rendering after modifications..." << std::endl;
-    world.Update(deltaTime);
+    scene.Update(deltaTime);
     std::cout << std::endl;
     
     // Query entities
     std::cout << "5. Querying entities..." << std::endl;
-    auto allEntities = world.GetAllEntities();
+    auto allEntities = scene.GetAllEntities();
     std::cout << "   Total entities: " << allEntities.size() << std::endl;
     
-    auto entitiesWithTransform = world.GetEntitiesWithComponent<Transform2D>();
+    auto entitiesWithTransform = scene.GetEntitiesWithComponent<Transform2D>();
     std::cout << "   Entities with Transform2D: " << entitiesWithTransform.size() << std::endl;
     
-    auto entitiesWithVelocity = world.GetEntitiesWithComponent<Velocity2D>();
+    auto entitiesWithVelocity = scene.GetEntitiesWithComponent<Velocity2D>();
     std::cout << "   Entities with Velocity2D: " << entitiesWithVelocity.size() << std::endl;
     
     std::cout << std::endl;
     
     // Cleanup
     std::cout << "6. Destroying entities..." << std::endl;
-    world.DestroyEntity(enemy);
+    scene.DestroyEntity(enemy);
     std::cout << "   Destroyed enemy entity" << std::endl;
-    std::cout << "   Remaining entities: " << world.GetAllEntities().size() << std::endl;
+    std::cout << "   Remaining entities: " << scene.GetAllEntities().size() << std::endl;
     
     std::cout << std::endl;
     std::cout << "ECS example completed successfully!" << std::endl;

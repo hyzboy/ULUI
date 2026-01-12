@@ -13,21 +13,21 @@ namespace ului {
 namespace ecs {
 
 /**
- * The World manages all entities, components, and systems in the ECS.
+ * The Scene manages all entities, components, and systems in the ECS.
  * It provides the main interface for creating entities, adding components,
  * and updating systems.
  * 
  * Example usage:
- *   World world;
- *   Entity entity = world.CreateEntity();
- *   world.AddComponent<Transform2D>(entity, std::make_unique<Transform2D>());
- *   world.AddSystem(std::make_unique<RenderSystem>());
- *   world.Update(deltaTime);
+ *   Scene scene;
+ *   Entity entity = scene.CreateEntity();
+ *   scene.AddComponent<Transform2D>(entity, std::make_unique<Transform2D>());
+ *   scene.AddSystem(std::make_unique<RenderSystem>());
+ *   scene.Update(deltaTime);
  */
-class World {
+class Scene {
 public:
-    World() : m_nextEntityId(0) {}
-    ~World() = default;
+    Scene() : m_nextEntityId(0) {}
+    ~Scene() = default;
     
     /**
      * Create a new entity
@@ -94,7 +94,7 @@ public:
     }
     
     /**
-     * Add a system to the world
+     * Add a system to the scene
      */
     void AddSystem(std::unique_ptr<System> system) {
         system->Initialize(this);
@@ -112,7 +112,7 @@ public:
     }
     
     /**
-     * Get all entities in the world
+     * Get all entities in the scene
      */
     const std::vector<Entity>& GetAllEntities() const {
         return m_entities;

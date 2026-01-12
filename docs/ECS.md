@@ -26,7 +26,7 @@ Component names use the 2D suffix (e.g., `Transform2D`, `Sprite2D`) to:
 A lightweight unique identifier representing an object in the game.
 
 ```cpp
-Entity player = world.CreateEntity();
+Entity player = scene.CreateEntity();
 ```
 
 ### Component (组件)
@@ -65,16 +65,16 @@ class RenderSystem : public System {
 };
 ```
 
-### World (世界)
+### Scene (场景)
 管理所有实体、组件和系统的容器。
 
 Container managing all entities, components, and systems.
 
 ```cpp
-World world;
-world.CreateEntity();
-world.AddSystem(std::make_unique<RenderSystem>());
-world.Update(deltaTime);
+Scene scene;
+scene.CreateEntity();
+scene.AddSystem(std::make_unique<RenderSystem>());
+scene.Update(deltaTime);
 ```
 
 ## 2D 组件 / 2D Components
@@ -84,25 +84,25 @@ world.Update(deltaTime);
 
 Position, rotation, and scale transformation (using SOA pattern).
 
-**注意**: 必须通过 World 的 TransformStorage2D 创建。使用 getter/setter 访问数据。
+**注意**: 必须通过 Scene 的 TransformStorage2D 创建。使用 getter/setter 访问数据。
 
-**Note**: Must be created with World's TransformStorage2D. Use getter/setter methods to access data.
+**Note**: Must be created with Scene's TransformStorage2D. Use getter/setter methods to access data.
 
 ```cpp
 // Use helper function (recommended)
-Entity entity = CreateEntity2D(world, 100.0f, 200.0f);
+Entity entity = CreateEntity2D(scene, 100.0f, 200.0f);
 
 // Or create manually
-auto transform = std::make_unique<Transform2D>(&world.GetTransformStorage2D(), 100.0f, 200.0f);
-world.AddComponent(entity, std::move(transform));
+auto transform = std::make_unique<Transform2D>(&scene.GetTransformStorage2D(), 100.0f, 200.0f);
+scene.AddComponent(entity, std::move(transform));
 
 // Access data via methods (not direct field access)
-Transform2D* t = world.GetComponent<Transform2D>(entity);
+Transform2D* t = scene.GetComponent<Transform2D>(entity);
 t->SetRotation(1.57f);  // 90 degrees in radians
 t->SetScale(2.0f);      // Uniform scale
 float x = t->GetX();    // Get position
 t->Translate(10, 0);    // Move right
-world.AddComponent(entity, std::move(transform));
+scene.AddComponent(entity, std::move(transform));
 ```
 
 ### Sprite2D
@@ -115,7 +115,7 @@ auto sprite = std::make_unique<Sprite2D>("player.png");
 sprite->SetSize(64.0f, 64.0f);
 sprite->SetCenterPivot();
 sprite->SetFlip(true, false);  // Flip horizontally
-world.AddComponent(entity, std::move(sprite));
+scene.AddComponent(entity, std::move(sprite));
 ```
 
 ### Renderable2D
@@ -127,7 +127,7 @@ Rendering properties (visibility, layer, opacity, tint).
 auto renderable = std::make_unique<Renderable2D>(true, 1);
 renderable->SetOpacity(0.8f);
 renderable->SetTint(255, 128, 128);  // Red tint
-world.AddComponent(entity, std::move(renderable));
+scene.AddComponent(entity, std::move(renderable));
 ```
 
 ## 使用示例 / Usage Example
@@ -138,37 +138,37 @@ world.AddComponent(entity, std::move(renderable));
 #include "ecs/ECS.h"
 using namespace ului::ecs;
 
-// Create world
-World world;
+// Create scene
+Scene scene;
 
 // Method 1: Manual creation
-Entity player = world.CreateEntity();
-world.AddComponent(player, std::make_unique<Transform2D>(100.0f, 200.0f));
-world.AddComponent(player, std::make_unique<Sprite2D>("player.png"));
-world.AddComponent(player, std::make_unique<Renderable2D>(true, 1));
+Entity player = scene.CreateEntity();
+scene.AddComponent(player, std::make_unique<Transform2D>(100.0f, 200.0f));
+scene.AddComponent(player, std::make_unique<Sprite2D>("player.png"));
+scene.AddComponent(player, std::make_unique<Renderable2D>(true, 1));
 
 // Method 2: Using helper function
-Entity enemy = CreateSpriteEntity(world, "enemy.png", 300.0f, 200.0f, 64.0f, 64.0f);
+Entity enemy = CreateSpriteEntity(scene, "enemy.png", 300.0f, 200.0f, 64.0f, 64.0f);
 ```
 
 ### 访问和修改组件 / Accessing and Modifying Components
 
 ```cpp
 // Get component
-Transform2D* transform = world.GetComponent<Transform2D>(player);
+Transform2D* transform = scene.GetComponent<Transform2D>(player);
 if (transform) {
     transform->Translate(10.0f, 0.0f);  // Move right
     transform->Rotate(0.1f);             // Rotate
 }
 
 // Check if entity has component
-if (world.HasComponent<Sprite2D>(player)) {
-    Sprite2D* sprite = world.GetComponent<Sprite2D>(player);
+if (scene.HasComponent<Sprite2D>(player)) {
+    Sprite2D* sprite = scene.GetComponent<Sprite2D>(player);
     sprite->SetFlip(true, false);
 }
 
 // Remove component
-world.RemoveComponent<Renderable2D>(player);
+scene.RemoveComponent<Renderable2D>(player);
 ```
 
 ### 创建自定义系统 / Creating Custom Systems
@@ -193,24 +193,24 @@ private:
     float speed = 100.0f;
 };
 
-// Add system to world
-world.AddSystem(std::make_unique<MovementSystem>());
+// Add system to scene
+scene.AddSystem(std::make_unique<MovementSystem>());
 ```
 
 ### 游戏循环 / Game Loop
 
 ```cpp
-World world;
+Scene scene;
 
 // Setup
-Entity player = CreateSpriteEntity(world, "player.png", 100, 100, 64, 64);
-world.AddSystem(std::make_unique<MovementSystem>());
-world.AddSystem(std::make_unique<RenderSystem>());
+Entity player = CreateSpriteEntity(scene, "player.png", 100, 100, 64, 64);
+scene.AddSystem(std::make_unique<MovementSystem>());
+scene.AddSystem(std::make_unique<RenderSystem>());
 
 // Game loop
 float deltaTime = 0.016f;  // ~60 FPS
 while (running) {
-    world.Update(deltaTime);
+    scene.Update(deltaTime);
 }
 ```
 
@@ -231,19 +231,19 @@ struct Velocity2D : public Component {
 
 // Usage
 auto velocity = std::make_unique<Velocity2D>(50.0f, 0.0f);
-world.AddComponent(entity, std::move(velocity));
+scene.AddComponent(entity, std::move(velocity));
 ```
 
 ## 查询实体 / Querying Entities
 
 ```cpp
 // Get all entities with Transform2D
-auto entities = world.GetEntitiesWithComponent<Transform2D>();
+auto entities = scene.GetEntitiesWithComponent<Transform2D>();
 
 // Check multiple components
-for (Entity entity : world.GetAllEntities()) {
-    if (world.HasComponent<Transform2D>(entity) && 
-        world.HasComponent<Sprite2D>(entity)) {
+for (Entity entity : scene.GetAllEntities()) {
+    if (scene.HasComponent<Transform2D>(entity) && 
+        scene.HasComponent<Sprite2D>(entity)) {
         // Process entity
     }
 }
@@ -269,7 +269,7 @@ for (Entity entity : world.GetAllEntities()) {
    
    ```cpp
    // SOA allows efficient batch operations
-   TransformDataStorage2D& storage = world.GetTransformStorage2D();
+   TransformDataStorage2D& storage = scene.GetTransformStorage2D();
    const float* posX = storage.GetPositionXArray();
    const float* posY = storage.GetPositionYArray();
    // Can process arrays efficiently with SIMD
@@ -330,16 +330,16 @@ The ECS system is compatible with the existing `Object` base class:
 class GameWorld : public ului::Object {
 public:
     GameWorld() : Object("GameWorld") {
-        LogI("Initializing game world");
+        LogI("Initializing game scene");
     }
     
     void Update(float deltaTime) {
-        m_ecsWorld.Update(deltaTime);
-        LogD("Updated ECS world");
+        m_ecsScene.Update(deltaTime);
+        LogD("Updated ECS scene");
     }
     
 private:
-    ecs::World m_ecsWorld;
+    ecs::Scene m_ecsScene;
 };
 ```
 

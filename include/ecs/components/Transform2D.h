@@ -29,7 +29,7 @@ struct Transform2D : public Component {
     // Index to data in TransformDataStorage2D
     uint32_t dataIndex = 0;
     
-    // Pointer to the shared storage (managed by World/ComponentManager)
+    // Pointer to the shared storage (managed by Scene/ComponentManager)
     TransformDataStorage2D* storage = nullptr;
     
     /**

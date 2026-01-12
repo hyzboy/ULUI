@@ -282,28 +282,28 @@ ULUI provides an ECS architecture specifically designed for 2D applications to h
 #include "ecs/ECS.h"
 using namespace ului::ecs;
 
-// Create world
-World world;
+// Create scene
+Scene scene;
 
 // Create entity with components
-Entity player = CreateSpriteEntity(world, "player.png", 100, 100, 64, 64);
+Entity player = CreateSpriteEntity(scene, "player.png", 100, 100, 64, 64);
 
 // Access components
-Transform2D* transform = world.GetComponent<Transform2D>(player);
+Transform2D* transform = scene.GetComponent<Transform2D>(player);
 transform->Translate(10.0f, 0.0f);
 
 // Add systems
-world.AddSystem(std::make_unique<RenderSystem>());
+scene.AddSystem(std::make_unique<RenderSystem>());
 
 // Update
-world.Update(deltaTime);
+scene.Update(deltaTime);
 ```
 
 **Core Concepts**:
 - **Entity**: Lightweight unique identifier
 - **Component**: Pure data containers (Transform2D, Sprite2D, Renderable2D)
 - **System**: Logic that processes entities
-- **World**: Manages all entities, components, and systems
+- **Scene**: Manages all entities, components, and systems
 
 Complete documentation:
 - [docs/ECS.md](docs/ECS.md) - Detailed ECS architecture guide
