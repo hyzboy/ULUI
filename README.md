@@ -9,6 +9,7 @@ A cross-platform OpenGL ES 3.0 project using Google's ANGLE implementation for r
 - **C++20** standard
 - **OpenGL ES 3.0** via Google ANGLE Project
 - **GLFW** for desktop window management
+- **ECS (Entity Component System)** architecture designed specifically for 2D applications
 - **Object-oriented base class** with automatic class name detection and TAG-based logging
 - **Cross-platform file system** abstraction for assets and external files
 - **Comprehensive logging system** with multiple output targets (console, file, network, pipe, platform-specific)
@@ -272,6 +273,42 @@ public:
 ```
 
 See [docs/OBJECT.md](docs/OBJECT.md) for complete documentation.
+
+## ECS (Entity Component System) Architecture
+
+ULUI provides an ECS architecture specifically designed for 2D applications to help organize game logic:
+
+```cpp
+#include "ecs/ECS.h"
+using namespace ului::ecs;
+
+// Create world
+World world;
+
+// Create entity with components
+Entity player = CreateSpriteEntity(world, "player.png", 100, 100, 64, 64);
+
+// Access components
+Transform2D* transform = world.GetComponent<Transform2D>(player);
+transform->Translate(10.0f, 0.0f);
+
+// Add systems
+world.AddSystem(std::make_unique<RenderSystem>());
+
+// Update
+world.Update(deltaTime);
+```
+
+**Core Concepts**:
+- **Entity**: Lightweight unique identifier
+- **Component**: Pure data containers (Transform2D, Sprite2D, Renderable2D)
+- **System**: Logic that processes entities
+- **World**: Manages all entities, components, and systems
+
+Complete documentation:
+- [docs/ECS.md](docs/ECS.md) - Detailed ECS architecture guide
+- [docs/ECS_MIGRATION.md](docs/ECS_MIGRATION.md) - Migration guide
+- [examples/ecs_example.cpp](examples/ecs_example.cpp) - Complete example
 
 ## Usage
 

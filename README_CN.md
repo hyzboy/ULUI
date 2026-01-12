@@ -9,6 +9,7 @@
 - **C++20** 标准
 - **OpenGL ES 3.0** 通过 Google ANGLE 项目实现
 - **GLFW** 用于桌面平台的窗口管理
+- **ECS (Entity Component System)** 专为 2D 应用设计的架构
 - **面向对象基类**，具有自动类名检测和基于TAG的日志记录
 - **跨平台文件系统**抽象，支持资产和外部文件
 - **完善的日志系统**，支持多种输出目标（控制台、文件、网络、管道、平台特定）
@@ -257,6 +258,42 @@ public:
 ```
 
 完整文档请参阅 [docs/OBJECT_CN.md](docs/OBJECT_CN.md)。
+
+## ECS (Entity Component System) 架构
+
+ULUI 提供专为 2D 应用设计的 ECS 架构，帮助组织游戏逻辑：
+
+```cpp
+#include "ecs/ECS.h"
+using namespace ului::ecs;
+
+// 创建世界
+World world;
+
+// 创建实体和组件
+Entity player = CreateSpriteEntity(world, "player.png", 100, 100, 64, 64);
+
+// 访问组件
+Transform2D* transform = world.GetComponent<Transform2D>(player);
+transform->Translate(10.0f, 0.0f);
+
+// 添加系统
+world.AddSystem(std::make_unique<RenderSystem>());
+
+// 更新
+world.Update(deltaTime);
+```
+
+**核心概念**:
+- **Entity (实体)**: 轻量级唯一标识符
+- **Component (组件)**: 纯数据容器 (Transform2D, Sprite2D, Renderable2D)
+- **System (系统)**: 处理实体的逻辑
+- **World (世界)**: 管理所有实体、组件和系统
+
+完整文档请参阅:
+- [docs/ECS.md](docs/ECS.md) - ECS 架构详细说明
+- [docs/ECS_MIGRATION.md](docs/ECS_MIGRATION.md) - 迁移指南
+- [examples/ecs_example.cpp](examples/ecs_example.cpp) - 完整示例
 
 ## 使用方法
 
