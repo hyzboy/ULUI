@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <typeindex>
 #include <vector>
+#include <algorithm>
 
 namespace ului {
 namespace ecs {
