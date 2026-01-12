@@ -33,3 +33,15 @@ target_compile_definitions(comprehensive_log_test PRIVATE
     $<$<CONFIG:Debug>:_DEBUG>
     $<$<CONFIG:Release>:NDEBUG>
 )
+
+# ECS example
+add_executable(ecs_example
+    ecs_example.cpp
+    ../src/ecs/ComponentManager.cpp
+)
+
+# Compile definitions
+target_compile_definitions(ecs_example PRIVATE
+    $<$<CONFIG:Debug>:_DEBUG>
+    $<$<CONFIG:Release>:NDEBUG>
+)

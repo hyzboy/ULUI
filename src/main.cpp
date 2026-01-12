@@ -1,4 +1,4 @@
-#include "triangle_app.h"
+#include "ecs_app.h"
 #include "file_system.h"
 #include "logger.h"
 #include "path.h"
@@ -48,7 +48,7 @@ int main()
 {
     // Initialize Logger
     Logger::Log::Initialize();
-    LOG_I("Main", "ULUI - OpenGL ES 3.0 Triangle Example with ANGLE");
+    LOG_I("Main", "ULUI - ECS 2D Rounded Rectangles Demo");
     
     // Initialize FileSystem with default asset path using Path class
     Path assetPath("assets/");
@@ -74,7 +74,7 @@ int main()
     const int WINDOW_WIDTH = 800;
     const int WINDOW_HEIGHT = 600;
     GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, 
-                                          "ULUI - Triangle Example", nullptr, nullptr);
+                                          "ULUI - ECS Rounded Rectangles", nullptr, nullptr);
     
     if (!window) {
         LOG_E("Main", "Failed to create GLFW window");
@@ -97,11 +97,11 @@ int main()
     int fbWidth, fbHeight;
     glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
     
-    // Initialize triangle app
-    TriangleApp app;
-    LOG_I("Main", "Initializing triangle app with framebuffer size: %dx%d", fbWidth, fbHeight);
+    // Initialize ECS app
+    ECSApp app;
+    LOG_I("Main", "Initializing ECS app with framebuffer size: %dx%d", fbWidth, fbHeight);
     if (!app.initialize(fbWidth, fbHeight)) {
-        LOG_E("Main", "Failed to initialize triangle app");
+        LOG_E("Main", "Failed to initialize ECS app");
         glfwDestroyWindow(window);
         glfwTerminate();
         return EXIT_FAILURE;
@@ -147,7 +147,7 @@ struct AndroidApp {
     EGLDisplay display;
     EGLSurface surface;
     EGLContext context;
-    TriangleApp triangleApp;
+    ECSApp ecsApp;
     bool initialized;
 };
 
@@ -193,7 +193,7 @@ static int initializeEGL(AndroidApp* androidApp)
     eglQuerySurface(androidApp->display, androidApp->surface, EGL_WIDTH, &width);
     eglQuerySurface(androidApp->display, androidApp->surface, EGL_HEIGHT, &height);
     
-    androidApp->triangleApp.initialize(width, height);
+    androidApp->ecsApp.initialize(width, height);
     androidApp->initialized = true;
     
     return 0;
@@ -263,7 +263,7 @@ void android_main(android_app* state)
         }
         
         if (androidApp.initialized) {
-            androidApp.triangleApp.render();
+            androidApp.ecsApp.render();
             eglSwapBuffers(androidApp.display, androidApp.surface);
         }
     }

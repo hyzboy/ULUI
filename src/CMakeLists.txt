@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.20)
 set(SOURCES
     main.cpp
     triangle_app.cpp
+    ecs_app.cpp
     file_system.cpp
     path.cpp
     File.cpp
@@ -28,6 +29,7 @@ set(SOURCES
     gl/RenderTarget.cpp
     Bitmap.cpp
     BitmapFormat.cpp
+    ecs/ComponentManager.cpp
 )
 
 # Add Android MediaCodec sources if building for Android
