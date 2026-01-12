@@ -25,6 +25,21 @@ public:
      * @return Index to the allocated slot
      */
     uint32_t Allocate() {
+        // Reuse a freed index if available
+        if (!m_freeIndices.empty()) {
+            uint32_t index = m_freeIndices.back();
+            m_freeIndices.pop_back();
+            
+            // Reset to default values
+            m_posX[index] = 0.0f;
+            m_posY[index] = 0.0f;
+            m_rotation[index] = 0.0f;
+            m_scaleX[index] = 1.0f;
+            m_scaleY[index] = 1.0f;
+            
+            return index;
+        }
+        
         uint32_t index = static_cast<uint32_t>(m_posX.size());
         
         // Add default values
@@ -41,6 +56,21 @@ public:
      * Allocate with initial values
      */
     uint32_t Allocate(float x, float y, float rot = 0.0f, float sclX = 1.0f, float sclY = 1.0f) {
+        // Reuse a freed index if available
+        if (!m_freeIndices.empty()) {
+            uint32_t index = m_freeIndices.back();
+            m_freeIndices.pop_back();
+            
+            // Set initial values
+            m_posX[index] = x;
+            m_posY[index] = y;
+            m_rotation[index] = rot;
+            m_scaleX[index] = sclX;
+            m_scaleY[index] = sclY;
+            
+            return index;
+        }
+        
         uint32_t index = static_cast<uint32_t>(m_posX.size());
         
         m_posX.push_back(x);
@@ -63,31 +93,57 @@ public:
     }
     
     // Position accessors
-    float GetX(uint32_t index) const { return m_posX[index]; }
-    float GetY(uint32_t index) const { return m_posY[index]; }
-    void SetX(uint32_t index, float value) { m_posX[index] = value; }
-    void SetY(uint32_t index, float value) { m_posY[index] = value; }
+    float GetX(uint32_t index) const { 
+        return index < m_posX.size() ? m_posX[index] : 0.0f; 
+    }
+    float GetY(uint32_t index) const { 
+        return index < m_posY.size() ? m_posY[index] : 0.0f; 
+    }
+    void SetX(uint32_t index, float value) { 
+        if (index < m_posX.size()) m_posX[index] = value; 
+    }
+    void SetY(uint32_t index, float value) { 
+        if (index < m_posY.size()) m_posY[index] = value; 
+    }
     void SetPosition(uint32_t index, float x, float y) {
-        m_posX[index] = x;
-        m_posY[index] = y;
+        if (index < m_posX.size()) {
+            m_posX[index] = x;
+            m_posY[index] = y;
+        }
     }
     
     // Rotation accessors
-    float GetRotation(uint32_t index) const { return m_rotation[index]; }
-    void SetRotation(uint32_t index, float value) { m_rotation[index] = value; }
+    float GetRotation(uint32_t index) const { 
+        return index < m_rotation.size() ? m_rotation[index] : 0.0f; 
+    }
+    void SetRotation(uint32_t index, float value) { 
+        if (index < m_rotation.size()) m_rotation[index] = value; 
+    }
     
     // Scale accessors
-    float GetScaleX(uint32_t index) const { return m_scaleX[index]; }
-    float GetScaleY(uint32_t index) const { return m_scaleY[index]; }
-    void SetScaleX(uint32_t index, float value) { m_scaleX[index] = value; }
-    void SetScaleY(uint32_t index, float value) { m_scaleY[index] = value; }
+    float GetScaleX(uint32_t index) const { 
+        return index < m_scaleX.size() ? m_scaleX[index] : 1.0f; 
+    }
+    float GetScaleY(uint32_t index) const { 
+        return index < m_scaleY.size() ? m_scaleY[index] : 1.0f; 
+    }
+    void SetScaleX(uint32_t index, float value) { 
+        if (index < m_scaleX.size()) m_scaleX[index] = value; 
+    }
+    void SetScaleY(uint32_t index, float value) { 
+        if (index < m_scaleY.size()) m_scaleY[index] = value; 
+    }
     void SetScale(uint32_t index, float x, float y) {
-        m_scaleX[index] = x;
-        m_scaleY[index] = y;
+        if (index < m_scaleX.size()) {
+            m_scaleX[index] = x;
+            m_scaleY[index] = y;
+        }
     }
     void SetScale(uint32_t index, float value) {
-        m_scaleX[index] = value;
-        m_scaleY[index] = value;
+        if (index < m_scaleX.size()) {
+            m_scaleX[index] = value;
+            m_scaleY[index] = value;
+        }
     }
     
     // Batch operations for better performance

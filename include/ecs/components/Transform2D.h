@@ -18,6 +18,8 @@ namespace ecs {
  * for better cache performance. The component itself only stores an index to the
  * actual data stored in TransformDataStorage2D.
  * 
+ * Note: Components should not be copied. They are managed via unique_ptr by the ECS.
+ * 
  * Coordinate system:
  * - Position: (x, y) in pixels or world units
  * - Rotation: angle in radians (positive = counter-clockwise)
@@ -62,6 +64,35 @@ struct Transform2D : public Component {
         if (storage) {
             storage->Free(dataIndex);
         }
+    }
+    
+    // Delete copy constructor and copy assignment - components shouldn't be copied
+    Transform2D(const Transform2D&) = delete;
+    Transform2D& operator=(const Transform2D&) = delete;
+    
+    // Move constructor
+    Transform2D(Transform2D&& other) noexcept 
+        : dataIndex(other.dataIndex), storage(other.storage) {
+        // Prevent other from freeing the data
+        other.storage = nullptr;
+    }
+    
+    // Move assignment
+    Transform2D& operator=(Transform2D&& other) noexcept {
+        if (this != &other) {
+            // Free our current data
+            if (storage) {
+                storage->Free(dataIndex);
+            }
+            
+            // Take ownership of other's data
+            dataIndex = other.dataIndex;
+            storage = other.storage;
+            
+            // Prevent other from freeing the data
+            other.storage = nullptr;
+        }
+        return *this;
     }
     
     // Position accessors
@@ -152,43 +183,6 @@ struct Transform2D : public Component {
         if (storage) {
             storage->SetRotation(dataIndex, storage->GetRotation(dataIndex) + angle);
         }
-    }
-    
-    // Legacy compatibility properties (for backward compatibility with existing code)
-    // These return references to temporary values - use getter/setter methods instead
-    [[deprecated("Use GetX()/SetX() instead")]]
-    float& x() { 
-        static float temp = GetX(); 
-        temp = GetX(); 
-        return temp; 
-    }
-    
-    [[deprecated("Use GetY()/SetY() instead")]]
-    float& y() { 
-        static float temp = GetY(); 
-        temp = GetY(); 
-        return temp; 
-    }
-    
-    [[deprecated("Use GetRotation()/SetRotation() instead")]]
-    float& rotation() { 
-        static float temp = GetRotation(); 
-        temp = GetRotation(); 
-        return temp; 
-    }
-    
-    [[deprecated("Use GetScaleX()/SetScaleX() instead")]]
-    float& scaleX() { 
-        static float temp = GetScaleX(); 
-        temp = GetScaleX(); 
-        return temp; 
-    }
-    
-    [[deprecated("Use GetScaleY()/SetScaleY() instead")]]
-    float& scaleY() { 
-        static float temp = GetScaleY(); 
-        temp = GetScaleY(); 
-        return temp; 
     }
     
     std::type_index GetTypeIndex() const override {
